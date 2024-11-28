@@ -55,8 +55,6 @@
                             <th>Data Início</th>
                             <th>Data Fim</th>
                             <th>Status</th>
-                            <th>Pagamento</th>
-                            <th>Valor Total</th>
                             <th>Ações</th>
                         </tr>
                     </thead>
@@ -66,73 +64,37 @@
                                 <td>{{ $booking->id }}</td>
                                 <td>{{ $booking->client->name }}</td>
                                 <td>{{ $booking->vehicle->model }} ({{ $booking->vehicle->plate }})</td>
-                                <td>{{ $booking->driver->name }}</td>
+                                <td>{{ $booking->driver ? $booking->driver->name : 'Sem motorista' }}</td>
                                 <td>{{ $booking->start_date->format('d/m/Y H:i') }}</td>
                                 <td>{{ $booking->end_date->format('d/m/Y H:i') }}</td>
                                 <td>
-                                    @php
-                                        $statusClasses = [
-                                            'pending' => 'bg-warning',
-                                            'confirmed' => 'bg-info',
-                                            'in_progress' => 'bg-primary',
-                                            'completed' => 'bg-success',
-                                            'cancelled' => 'bg-danger'
-                                        ];
-                                        $statusLabels = [
-                                            'pending' => 'Pendente',
-                                            'confirmed' => 'Confirmada',
-                                            'in_progress' => 'Em Andamento',
-                                            'completed' => 'Concluída',
-                                            'cancelled' => 'Cancelada'
-                                        ];
-                                    @endphp
-                                    <span class="badge {{ $statusClasses[$booking->status] }}">
-                                        {{ $statusLabels[$booking->status] }}
+                                    <span class="badge bg-{{ $booking->status_color }}">
+                                        {{ $booking->status_text }}
                                     </span>
                                 </td>
-                                <td>
-                                    @php
-                                        $paymentClasses = [
-                                            'pending' => 'bg-warning',
-                                            'paid' => 'bg-success',
-                                            'partially_paid' => 'bg-info',
-                                            'refunded' => 'bg-secondary'
-                                        ];
-                                        $paymentLabels = [
-                                            'pending' => 'Pendente',
-                                            'paid' => 'Pago',
-                                            'partially_paid' => 'Parcial',
-                                            'refunded' => 'Reembolsado'
-                                        ];
-                                    @endphp
-                                    <span class="badge {{ $paymentClasses[$booking->payment_status] }}">
-                                        {{ $paymentLabels[$booking->payment_status] }}
-                                    </span>
-                                </td>
-                                <td>R$ {{ number_format($booking->total_amount, 2, ',', '.') }}</td>
                                 <td>
                                     <div class="btn-group">
-                                        <a href="{{ route('bookings.show', $booking) }}" class="btn btn-sm btn-info" title="Detalhes">
+                                        <a href="{{ route('bookings.show', $booking->id) }}" class="btn btn-sm btn-info">
                                             <i class="fas fa-eye"></i>
                                         </a>
-                                        @if($booking->status != 'cancelled' && $booking->status != 'completed')
-                                            <a href="{{ route('bookings.edit', $booking) }}" class="btn btn-sm btn-warning" title="Editar">
-                                                <i class="fas fa-edit"></i>
-                                            </a>
-                                            <form action="{{ route('bookings.destroy', $booking) }}" method="POST" class="d-inline">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="btn btn-sm btn-danger" title="Cancelar" onclick="return confirm('Tem certeza que deseja cancelar esta reserva?')">
-                                                    <i class="fas fa-times"></i>
-                                                </button>
-                                            </form>
-                                        @endif
+                                        <a href="{{ route('bookings.edit', $booking->id) }}" class="btn btn-sm btn-warning">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal" data-booking-id="{{ $booking->id }}">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
                                     </div>
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="10" class="text-center">Nenhuma reserva encontrada.</td>
+                                <td colspan="8" class="text-center py-4">
+                                    <div class="d-flex flex-column align-items-center">
+                                        <i class="fas fa-calendar-alt fa-3x text-muted mb-3"></i>
+                                        <p class="h5 text-muted">Nenhuma reserva encontrada</p>
+                                        <p class="text-muted">Clique no botão "Nova Reserva" para adicionar uma reserva</p>
+                                    </div>
+                                </td>
                             </tr>
                         @endforelse
                     </tbody>

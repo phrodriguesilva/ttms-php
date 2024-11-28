@@ -5,7 +5,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2>Suprimentos</h2>
         <a href="{{ route('supplies.create') }}" class="btn btn-primary">
-            <i class="fas fa-plus"></i> Novo Suprimento
+            <i class="fas fa-plus"></i> Novo Item
         </a>
     </div>
 
@@ -78,7 +78,13 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="text-center">Nenhum suprimento encontrado.</td>
+                                <td colspan="7" class="text-center py-4">
+                                    <div class="d-flex flex-column align-items-center">
+                                        <i class="fas fa-box fa-3x text-muted mb-3"></i>
+                                        <p class="h5 text-muted">Nenhum item encontrado</p>
+                                        <p class="text-muted">Clique no botão "Novo Item" para adicionar um item</p>
+                                    </div>
+                                </td>
                             </tr>
                         @endforelse
                     </tbody>

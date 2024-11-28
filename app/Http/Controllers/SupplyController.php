@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Supply;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class SupplyController extends Controller
@@ -60,14 +61,36 @@ class SupplyController extends Controller
             'unit_price' => 'required|numeric|min:0',
             'supplier' => 'nullable|string|max:255',
             'location' => 'nullable|string|max:100',
-            'notes' => 'nullable|string'
+            'notes' => 'nullable|string',
+            'photos.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
         ]);
 
-        Supply::create($validated);
+        $photos = [];
+        if ($request->hasFile('photos')) {
+            foreach ($request->file('photos') as $photo) {
+                $path = $photo->store('supplies', 'public');
+                $photos[] = $path;
+            }
+        }
+
+        Supply::create([
+            'name' => $validated['name'],
+            'code' => $validated['code'],
+            'category' => $validated['category'],
+            'description' => $validated['description'],
+            'unit' => $validated['unit'],
+            'stock_quantity' => $validated['stock_quantity'],
+            'minimum_stock' => $validated['minimum_stock'],
+            'unit_price' => $validated['unit_price'],
+            'supplier' => $validated['supplier'],
+            'location' => $validated['location'],
+            'notes' => $validated['notes'],
+            'photos' => $photos
+        ]);
 
         return redirect()
             ->route('supplies.index')
-            ->with('success', 'Suprimento cadastrado com sucesso.');
+            ->with('success', 'Item cadastrado com sucesso.');
     }
 
     /**
@@ -102,14 +125,36 @@ class SupplyController extends Controller
             'unit_price' => 'required|numeric|min:0',
             'supplier' => 'nullable|string|max:255',
             'location' => 'nullable|string|max:100',
-            'notes' => 'nullable|string'
+            'notes' => 'nullable|string',
+            'photos.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
         ]);
 
-        $supply->update($validated);
+        $photos = $supply->photos ?? [];
+        if ($request->hasFile('photos')) {
+            foreach ($request->file('photos') as $photo) {
+                $path = $photo->store('supplies', 'public');
+                $photos[] = $path;
+            }
+        }
+
+        $supply->update([
+            'name' => $validated['name'],
+            'code' => $validated['code'],
+            'category' => $validated['category'],
+            'description' => $validated['description'],
+            'unit' => $validated['unit'],
+            'stock_quantity' => $validated['stock_quantity'],
+            'minimum_stock' => $validated['minimum_stock'],
+            'unit_price' => $validated['unit_price'],
+            'supplier' => $validated['supplier'],
+            'location' => $validated['location'],
+            'notes' => $validated['notes'],
+            'photos' => $photos
+        ]);
 
         return redirect()
             ->route('supplies.index')
-            ->with('success', 'Suprimento atualizado com sucesso.');
+            ->with('success', 'Item atualizado com sucesso.');
     }
 
     /**
@@ -117,11 +162,18 @@ class SupplyController extends Controller
      */
     public function destroy(Supply $supply)
     {
+        // Remove as fotos do storage
+        if (!empty($supply->photos)) {
+            foreach ($supply->photos as $photo) {
+                Storage::disk('public')->delete($photo);
+            }
+        }
+
         $supply->delete();
 
         return redirect()
             ->route('supplies.index')
-            ->with('success', 'Suprimento excluído com sucesso.');
+            ->with('success', 'Item excluído com sucesso.');
     }
 
     /**

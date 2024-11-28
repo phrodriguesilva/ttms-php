@@ -16,13 +16,15 @@ class Supply extends Model
         'minimum_stock',
         'unit_price',
         'supplier',
-        'category'
+        'category',
+        'photos'
     ];
 
     protected $casts = [
         'stock_quantity' => 'integer',
         'minimum_stock' => 'integer',
-        'unit_price' => 'decimal:2'
+        'unit_price' => 'decimal:2',
+        'photos' => 'array'
     ];
 
     public function stockEntries()

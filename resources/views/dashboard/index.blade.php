@@ -1,203 +1,159 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container-fluid">
-    <div class="row">
-        <!-- Sidebar -->
-        <div class="col-md-2 bg-light sidebar">
-            <div class="position-sticky pt-3">
-                <ul class="nav flex-column">
-                    <li class="nav-item">
-                        <a class="nav-link active" href="{{ route('dashboard') }}">
-                            <i class="fas fa-tachometer-alt"></i> Dashboard
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ route('vehicles.index') }}">
-                            <i class="fas fa-car"></i> Veículos
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ route('bookings.index') }}">
-                            <i class="fas fa-calendar-alt"></i> Reservas
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ route('drivers.index') }}">
-                            <i class="fas fa-user"></i> Motoristas
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ route('clients.index') }}">
-                            <i class="fas fa-users"></i> Clientes
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ route('supplies.index') }}">
-                            <i class="fas fa-boxes"></i> Suprimentos
-                        </a>
-                    </li>
-                </ul>
+<div class="row g-4">
+    <!-- Statistics Cards -->
+    <div class="col-md-4">
+        <div class="card bg-primary text-white h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title mb-0">Total de Reservas</h6>
+                        <h2 class="mt-2 mb-0">{{ $totalBookings }}</h2>
+                    </div>
+                    <i class="fas fa-calendar-alt fa-2x opacity-50"></i>
+                </div>
             </div>
         </div>
-
-        <!-- Main content -->
-        <div class="col-md-10">
-            <div class="container-fluid">
-                <!-- Statistics Cards -->
-                <div class="row mt-4">
-                    <div class="col-xl-3 col-md-6">
-                        <div class="card bg-primary text-white mb-4">
-                            <div class="card-body">
-                                <h5 class="card-title">Veículos Ativos</h5>
-                                <h2 class="mb-0">{{ $activeVehicles ?? 0 }}</h2>
-                            </div>
-                        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-success text-white h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title mb-0">Veículos Ativos</h6>
+                        <h2 class="mt-2 mb-0">{{ $activeVehicles }}</h2>
                     </div>
-                    <div class="col-xl-3 col-md-6">
-                        <div class="card bg-success text-white mb-4">
-                            <div class="card-body">
-                                <h5 class="card-title">Reservas do Mês</h5>
-                                <h2 class="mb-0">{{ $monthlyBookings ?? 0 }}</h2>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-xl-3 col-md-6">
-                        <div class="card bg-warning text-white mb-4">
-                            <div class="card-body">
-                                <h5 class="card-title">Motoristas Disponíveis</h5>
-                                <h2 class="mb-0">{{ $availableDrivers ?? 0 }}</h2>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-xl-3 col-md-6">
-                        <div class="card bg-info text-white mb-4">
-                            <div class="card-body">
-                                <h5 class="card-title">Suprimentos em Estoque</h5>
-                                <h2 class="mb-0">{{ $suppliesInStock ?? 0 }}</h2>
-                            </div>
-                        </div>
-                    </div>
+                    <i class="fas fa-car fa-2x opacity-50"></i>
                 </div>
-
-                <!-- Recent Bookings -->
-                <div class="row mt-4">
-                    <div class="col-xl-6">
-                        <div class="card mb-4">
-                            <div class="card-header">
-                                <i class="fas fa-calendar-alt me-1"></i>
-                                Reservas Recentes
-                            </div>
-                            <div class="card-body">
-                                @if(isset($recentBookings) && count($recentBookings) > 0)
-                                    <div class="table-responsive">
-                                        <table class="table">
-                                            <thead>
-                                                <tr>
-                                                    <th>Cliente</th>
-                                                    <th>Veículo</th>
-                                                    <th>Data</th>
-                                                    <th>Status</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                @foreach($recentBookings as $booking)
-                                                    <tr>
-                                                        <td>{{ $booking->client->name }}</td>
-                                                        <td>{{ $booking->vehicle->model }}</td>
-                                                        <td>{{ $booking->start_date->format('d/m/Y') }}</td>
-                                                        <td>
-                                                            <span class="badge bg-{{ $booking->status_color }}">
-                                                                {{ $booking->status }}
-                                                            </span>
-                                                        </td>
-                                                    </tr>
-                                                @endforeach
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                @else
-                                    <p class="text-muted mb-0">Nenhuma reserva recente.</p>
-                                @endif
-                            </div>
-                        </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-info text-white h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title mb-0">Motoristas Disponíveis</h6>
+                        <h2 class="mt-2 mb-0">{{ $availableDrivers }}</h2>
                     </div>
-
-                    <!-- Vehicle Status -->
-                    <div class="col-xl-6">
-                        <div class="card mb-4">
-                            <div class="card-header">
-                                <i class="fas fa-car me-1"></i>
-                                Status dos Veículos
-                            </div>
-                            <div class="card-body">
-                                @if(isset($vehicleStatus) && count($vehicleStatus) > 0)
-                                    <div class="table-responsive">
-                                        <table class="table">
-                                            <thead>
-                                                <tr>
-                                                    <th>Veículo</th>
-                                                    <th>Placa</th>
-                                                    <th>Status</th>
-                                                    <th>Última Atualização</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                @foreach($vehicleStatus as $vehicle)
-                                                    <tr>
-                                                        <td>{{ $vehicle->model }}</td>
-                                                        <td>{{ $vehicle->plate }}</td>
-                                                        <td>
-                                                            <span class="badge bg-{{ $vehicle->status_color }}">
-                                                                {{ $vehicle->status }}
-                                                            </span>
-                                                        </td>
-                                                        <td>{{ $vehicle->updated_at->diffForHumans() }}</td>
-                                                    </tr>
-                                                @endforeach
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                @else
-                                    <p class="text-muted mb-0">Nenhum veículo cadastrado.</p>
-                                @endif
-                            </div>
-                        </div>
-                    </div>
+                    <i class="fas fa-user fa-2x opacity-50"></i>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Bookings -->
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Reservas Recentes</h5>
+                <a href="{{ route('bookings.create') }}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-plus"></i> Nova Reserva
+                </a>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Cliente</th>
+                                <th>Data</th>
+                                <th>Status</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($recentBookings as $booking)
+                            <tr>
+                                <td>#{{ $booking->id }}</td>
+                                <td>{{ $booking->client->name }}</td>
+                                <td>{{ $booking->pickup_date }}</td>
+                                <td>
+                                    <span class="badge bg-{{ $booking->status_color }}">
+                                        {{ $booking->status_text }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="{{ route('bookings.show', $booking->id) }}" class="btn btn-sm btn-info">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0">Reservas por Status</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="bookingsByStatusChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0">Veículos por Status</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="vehiclesByStatusChart"></canvas>
             </div>
         </div>
     </div>
 </div>
 @endsection
 
-@push('styles')
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-<style>
-    .sidebar {
-        min-height: calc(100vh - 56px);
-        box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
-    }
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const chartOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: {
+                    padding: 20,
+                    usePointStyle: true
+                }
+            }
+        }
+    };
 
-    .sidebar .nav-link {
-        color: #333;
-        padding: .5rem 1rem;
-    }
+    // Bookings by Status Chart
+    new Chart(document.getElementById('bookingsByStatusChart'), {
+        type: 'doughnut',
+        data: {
+            labels: {!! json_encode($bookingsByStatus->pluck('status_text')) !!},
+            datasets: [{
+                data: {!! json_encode($bookingsByStatus->pluck('count')) !!},
+                backgroundColor: ['#0d6efd', '#198754', '#dc3545', '#ffc107']
+            }]
+        },
+        options: chartOptions
+    });
 
-    .sidebar .nav-link.active {
-        color: #007bff;
-    }
-
-    .sidebar .nav-link:hover {
-        color: #007bff;
-    }
-
-    .card {
-        border-radius: .5rem;
-    }
-
-    .card-header {
-        background-color: rgba(0, 0, 0, .03);
-    }
-</style>
+    // Vehicles by Status Chart
+    new Chart(document.getElementById('vehiclesByStatusChart'), {
+        type: 'doughnut',
+        data: {
+            labels: {!! json_encode($vehiclesByStatus->pluck('status_text')) !!},
+            datasets: [{
+                data: {!! json_encode($vehiclesByStatus->pluck('count')) !!},
+                backgroundColor: ['#198754', '#dc3545', '#ffc107']
+            }]
+        },
+        options: chartOptions
+    });
+</script>
 @endpush

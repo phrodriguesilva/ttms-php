@@ -1,110 +1,105 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container-fluid">
-    <div class="row">
-        <!-- Sidebar -->
-        <div class="col-md-2 bg-light sidebar">
-            @include('layouts.sidebar')
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Veículos</h2>
+            <a href="{{ route('vehicles.create') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Novo Veículo
+            </a>
         </div>
 
-        <!-- Main content -->
-        <div class="col-md-10">
-            <div class="container-fluid">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h2>Veículos</h2>
-                    <a href="{{ route('vehicles.create') }}" class="btn btn-primary">
-                        <i class="fas fa-plus"></i> Novo Veículo
-                    </a>
+        <!-- Search and filters -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <form action="{{ route('vehicles.index') }}" method="GET" class="row g-3">
+                    <div class="col-md-3">
+                        <input type="text" name="search" class="form-control" placeholder="Buscar veículos..." value="{{ request('search') }}">
+                    </div>
+                    <div class="col-md-3">
+                        <select name="status" class="form-select">
+                            <option value="">Status</option>
+                            <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Ativo</option>
+                            <option value="maintenance" {{ request('status') == 'maintenance' ? 'selected' : '' }}>Em Manutenção</option>
+                            <option value="inactive" {{ request('status') == 'inactive' ? 'selected' : '' }}>Inativo</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <select name="type" class="form-select">
+                            <option value="">Tipo</option>
+                            <option value="car" {{ request('type') == 'car' ? 'selected' : '' }}>Carro</option>
+                            <option value="van" {{ request('type') == 'van' ? 'selected' : '' }}>Van</option>
+                            <option value="bus" {{ request('type') == 'bus' ? 'selected' : '' }}>Ônibus</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-search"></i> Filtrar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Vehicles list -->
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Placa</th>
+                                <th>Modelo</th>
+                                <th>Tipo</th>
+                                <th>Status</th>
+                                <th>Última Manutenção</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($vehicles as $vehicle)
+                                <tr>
+                                    <td>{{ $vehicle->plate }}</td>
+                                    <td>{{ $vehicle->model }}</td>
+                                    <td>{{ ucfirst($vehicle->type) }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ $vehicle->status_color }}">
+                                            {{ $vehicle->status_text }}
+                                        </span>
+                                    </td>
+                                    <td>{{ $vehicle->last_maintenance ? $vehicle->last_maintenance->format('d/m/Y') : 'N/A' }}</td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <a href="{{ route('vehicles.show', $vehicle->id) }}" class="btn btn-sm btn-info">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a href="{{ route('vehicles.edit', $vehicle->id) }}" class="btn btn-sm btn-warning">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal" data-vehicle-id="{{ $vehicle->id }}">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="6" class="text-center py-4">
+                                        <div class="d-flex flex-column align-items-center">
+                                            <i class="fas fa-car fa-3x text-muted mb-3"></i>
+                                            <p class="h5 text-muted">Nenhum veículo encontrado</p>
+                                            <p class="text-muted">Clique no botão "Novo Veículo" para adicionar um veículo</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
                 </div>
 
-                <!-- Search and filters -->
-                <div class="card mb-4">
-                    <div class="card-body">
-                        <form action="{{ route('vehicles.index') }}" method="GET" class="row g-3">
-                            <div class="col-md-3">
-                                <input type="text" name="search" class="form-control" placeholder="Buscar..." 
-                                       value="{{ request('search') }}">
-                            </div>
-                            <div class="col-md-2">
-                                <select name="status" class="form-select">
-                                    <option value="">Status</option>
-                                    <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Ativo</option>
-                                    <option value="maintenance" {{ request('status') == 'maintenance' ? 'selected' : '' }}>Em Manutenção</option>
-                                    <option value="inactive" {{ request('status') == 'inactive' ? 'selected' : '' }}>Inativo</option>
-                                </select>
-                            </div>
-                            <div class="col-md-2">
-                                <button type="submit" class="btn btn-secondary">
-                                    <i class="fas fa-search"></i> Filtrar
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-
-                <!-- Vehicles list -->
-                <div class="card">
-                    <div class="card-body">
-                        <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>Placa</th>
-                                        <th>Modelo</th>
-                                        <th>Ano</th>
-                                        <th>Status</th>
-                                        <th>Última Atualização</th>
-                                        <th>Ações</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @forelse($vehicles as $vehicle)
-                                        <tr>
-                                            <td>{{ $vehicle->plate }}</td>
-                                            <td>{{ $vehicle->model }}</td>
-                                            <td>{{ $vehicle->year }}</td>
-                                            <td>
-                                                <span class="badge bg-{{ $vehicle->status_color }}">
-                                                    {{ $vehicle->status }}
-                                                </span>
-                                            </td>
-                                            <td>{{ $vehicle->updated_at->format('d/m/Y H:i') }}</td>
-                                            <td>
-                                                <div class="btn-group" role="group">
-                                                    <a href="{{ route('vehicles.show', $vehicle) }}" 
-                                                       class="btn btn-sm btn-info text-white" 
-                                                       title="Visualizar">
-                                                        <i class="fas fa-eye"></i>
-                                                    </a>
-                                                    <a href="{{ route('vehicles.edit', $vehicle) }}" 
-                                                       class="btn btn-sm btn-warning text-white" 
-                                                       title="Editar">
-                                                        <i class="fas fa-edit"></i>
-                                                    </a>
-                                                    <button type="button" 
-                                                            class="btn btn-sm btn-danger" 
-                                                            title="Excluir"
-                                                            onclick="deleteVehicle({{ $vehicle->id }})">
-                                                        <i class="fas fa-trash"></i>
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    @empty
-                                        <tr>
-                                            <td colspan="6" class="text-center">Nenhum veículo encontrado.</td>
-                                        </tr>
-                                    @endforelse
-                                </tbody>
-                            </table>
-                        </div>
-
-                        <!-- Pagination -->
-                        <div class="d-flex justify-content-end mt-3">
-                            {{ $vehicles->links() }}
-                        </div>
-                    </div>
+                <div class="d-flex justify-content-end mt-3">
+                    {{ $vehicles->links() }}
                 </div>
             </div>
         </div>
@@ -133,25 +128,20 @@
         </div>
     </div>
 </div>
-@endsection
 
-@push('styles')
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-<style>
-    .sidebar {
-        min-height: calc(100vh - 56px);
-        box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
-    }
-</style>
-@endpush
+@endsection
 
 @push('scripts')
 <script>
-    function deleteVehicle(id) {
-        const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
-        const form = document.getElementById('deleteForm');
-        form.action = `/vehicles/${id}`;
-        modal.show();
+    // Handle delete modal
+    const deleteModal = document.getElementById('deleteModal');
+    if (deleteModal) {
+        deleteModal.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+            const vehicleId = button.getAttribute('data-vehicle-id');
+            const deleteForm = document.getElementById('deleteForm');
+            deleteForm.action = `/vehicles/${vehicleId}`;
+        });
     }
 </script>
 @endpush
