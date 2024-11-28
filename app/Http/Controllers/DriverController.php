@@ -4,23 +4,49 @@ namespace App\Http\Controllers;
 
 use App\Models\Driver;
 use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
+use Illuminate\View\View;
+use Illuminate\Http\RedirectResponse;
 
 class DriverController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index(): JsonResponse
+    public function index(Request $request): View
     {
-        $drivers = Driver::with(['bookings'])->get();
-        return response()->json($drivers);
+        $query = Driver::query();
+
+        // Apply search filter if provided
+        if ($request->has('search')) {
+            $search = $request->get('search');
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('license_number', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+
+        // Apply status filter if provided
+        if ($request->has('status') && $request->get('status')) {
+            $query->where('status', $request->get('status'));
+        }
+
+        $drivers = $query->orderBy('name')->paginate(10);
+        return view('drivers.index', compact('drivers'));
+    }
+
+    /**
+     * Show the form for creating a new resource.
+     */
+    public function create(): View
+    {
+        return view('drivers.create');
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request): JsonResponse
+    public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -29,62 +55,61 @@ class DriverController extends Controller
             'phone' => 'required|string|max:20',
             'email' => 'required|email|unique:drivers',
             'address' => 'required|string',
-            'status' => 'required|string|in:available,unavailable,on_trip',
+            'status' => 'required|in:active,inactive',
+            'emergency_contact' => 'nullable|string|max:255',
+            'emergency_phone' => 'nullable|string|max:20',
             'notes' => 'nullable|string'
         ]);
 
-        $driver = Driver::create($validated);
-        return response()->json($driver, 201);
+        Driver::create($validated);
+
+        return redirect()
+            ->route('drivers.index')
+            ->with('success', 'Motorista cadastrado com sucesso!');
     }
 
     /**
-     * Display the specified resource.
+     * Show the form for editing the specified resource.
      */
-    public function show(Driver $driver): JsonResponse
+    public function edit(Driver $driver): View
     {
-        $driver->load('bookings');
-        return response()->json($driver);
+        return view('drivers.create', compact('driver'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Driver $driver): JsonResponse
+    public function update(Request $request, Driver $driver): RedirectResponse
     {
         $validated = $request->validate([
-            'name' => 'sometimes|string|max:255',
-            'license_number' => 'sometimes|string|max:50|unique:drivers,license_number,' . $driver->id,
-            'license_expiry' => 'sometimes|date|after:today',
-            'phone' => 'sometimes|string|max:20',
-            'email' => 'sometimes|email|unique:drivers,email,' . $driver->id,
-            'address' => 'sometimes|string',
-            'status' => 'sometimes|string|in:available,unavailable,on_trip',
+            'name' => 'required|string|max:255',
+            'license_number' => 'required|string|max:50|unique:drivers,license_number,' . $driver->id,
+            'license_expiry' => 'required|date|after:today',
+            'phone' => 'required|string|max:20',
+            'email' => 'required|email|unique:drivers,email,' . $driver->id,
+            'address' => 'required|string',
+            'status' => 'required|in:active,inactive',
+            'emergency_contact' => 'nullable|string|max:255',
+            'emergency_phone' => 'nullable|string|max:20',
             'notes' => 'nullable|string'
         ]);
 
         $driver->update($validated);
-        return response()->json($driver);
+
+        return redirect()
+            ->route('drivers.index')
+            ->with('success', 'Motorista atualizado com sucesso!');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Driver $driver): JsonResponse
+    public function destroy(Driver $driver): RedirectResponse
     {
         $driver->delete();
-        return response()->json(null, 204);
-    }
 
-    /**
-     * Get all bookings for a specific driver.
-     */
-    public function bookings(Driver $driver): JsonResponse
-    {
-        $bookings = $driver->bookings()
-            ->with(['vehicle', 'client'])
-            ->orderBy('start_date', 'desc')
-            ->get();
-            
-        return response()->json($bookings);
+        return redirect()
+            ->route('drivers.index')
+            ->with('success', 'Motorista excluído com sucesso!');
     }
 }

@@ -13,17 +13,21 @@ class Client extends Model
 
     protected $fillable = [
         'name',
-        'company',
-        'email',
+        'type',
+        'document',
         'phone',
+        'email',
         'address',
-        'city',
-        'state',
-        'postal_code',
-        'country',
-        'tax_id',
-        'notes',
-        'status'
+        'contact_person',
+        'contact_phone',
+        'payment_method',
+        'payment_terms',
+        'is_active',
+        'notes'
+    ];
+
+    protected $casts = [
+        'is_active' => 'boolean'
     ];
 
     public function bookings(): HasMany

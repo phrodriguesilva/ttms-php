@@ -12,7 +12,17 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('supplies', function (Blueprint $table) {
+            $table->string('sku')->unique()->after('id');
             $table->json('photos')->nullable();
+            $table->string('category')->after('name');
+            $table->decimal('unit_price', 10, 2)->default(0)->after('category');
+            $table->string('supplier')->nullable()->after('unit_price');
+            $table->decimal('stock_quantity', 10, 2)->default(0)->after('supplier');
+            $table->decimal('minimum_stock', 10, 2)->default(0)->after('stock_quantity');
+            $table->string('unit')->default('UN')->after('minimum_stock');
+            $table->string('location')->nullable()->after('unit');
+            $table->text('description')->nullable()->after('location');
+            $table->text('notes')->nullable()->after('description');
         });
     }
 
@@ -22,7 +32,19 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('supplies', function (Blueprint $table) {
-            $table->dropColumn('photos');
+            $table->dropColumn([
+                'sku',
+                'photos',
+                'category',
+                'unit_price',
+                'supplier',
+                'stock_quantity',
+                'minimum_stock',
+                'unit',
+                'location',
+                'description',
+                'notes'
+            ]);
         });
     }
 };

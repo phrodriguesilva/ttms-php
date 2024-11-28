@@ -21,7 +21,7 @@ class SupplyController extends Controller
             $search = $request->get('search');
             $query->where(function($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('code', 'like', "%{$search}%")
+                  ->orWhere('sku', 'like', "%{$search}%")
                   ->orWhere('category', 'like', "%{$search}%");
             });
         }
@@ -33,8 +33,9 @@ class SupplyController extends Controller
 
         $supplies = $query->orderBy('updated_at', 'desc')
                          ->paginate(10);
+        $categories = Supply::getCategories();
 
-        return view('supplies.index', compact('supplies'));
+        return view('supplies.index', compact('supplies', 'categories'));
     }
 
     /**
@@ -42,7 +43,12 @@ class SupplyController extends Controller
      */
     public function create(): View
     {
-        return view('supplies.create');
+        $sku = Supply::generateSKU();
+        $categories = Supply::getCategories();
+        $suppliers = Supply::getSuppliers();
+        $units = Supply::getUnits();
+
+        return view('supplies.create', compact('sku', 'categories', 'suppliers', 'units'));
     }
 
     /**
@@ -52,15 +58,15 @@ class SupplyController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'code' => 'required|string|max:50|unique:supplies',
+            'sku' => 'required|string|max:50|unique:supplies',
             'category' => 'required|string|max:50',
-            'description' => 'nullable|string',
-            'unit' => 'required|string|max:20', // unidade de medida (un, kg, l, etc)
-            'stock_quantity' => 'required|numeric|min:0',
-            'minimum_stock' => 'required|numeric|min:0',
             'unit_price' => 'required|numeric|min:0',
             'supplier' => 'nullable|string|max:255',
+            'stock_quantity' => 'required|numeric|min:0',
+            'minimum_stock' => 'required|numeric|min:0',
+            'unit' => 'required|string|max:20',
             'location' => 'nullable|string|max:100',
+            'description' => 'nullable|string',
             'notes' => 'nullable|string',
             'photos.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
         ]);
@@ -73,20 +79,9 @@ class SupplyController extends Controller
             }
         }
 
-        Supply::create([
-            'name' => $validated['name'],
-            'code' => $validated['code'],
-            'category' => $validated['category'],
-            'description' => $validated['description'],
-            'unit' => $validated['unit'],
-            'stock_quantity' => $validated['stock_quantity'],
-            'minimum_stock' => $validated['minimum_stock'],
-            'unit_price' => $validated['unit_price'],
-            'supplier' => $validated['supplier'],
-            'location' => $validated['location'],
-            'notes' => $validated['notes'],
-            'photos' => $photos
-        ]);
+        $validated['photos'] = $photos;
+
+        Supply::create($validated);
 
         return redirect()
             ->route('supplies.index')
@@ -106,7 +101,11 @@ class SupplyController extends Controller
      */
     public function edit(Supply $supply): View
     {
-        return view('supplies.edit', compact('supply'));
+        $categories = Supply::getCategories();
+        $suppliers = Supply::getSuppliers();
+        $units = Supply::getUnits();
+
+        return view('supplies.edit', compact('supply', 'categories', 'suppliers', 'units'));
     }
 
     /**
@@ -116,15 +115,15 @@ class SupplyController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'code' => 'required|string|max:50|unique:supplies,code,' . $supply->id,
+            'sku' => 'required|string|max:50|unique:supplies,sku,' . $supply->id,
             'category' => 'required|string|max:50',
-            'description' => 'nullable|string',
-            'unit' => 'required|string|max:20',
-            'stock_quantity' => 'required|numeric|min:0',
-            'minimum_stock' => 'required|numeric|min:0',
             'unit_price' => 'required|numeric|min:0',
             'supplier' => 'nullable|string|max:255',
+            'stock_quantity' => 'required|numeric|min:0',
+            'minimum_stock' => 'required|numeric|min:0',
+            'unit' => 'required|string|max:20',
             'location' => 'nullable|string|max:100',
+            'description' => 'nullable|string',
             'notes' => 'nullable|string',
             'photos.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
         ]);
@@ -137,20 +136,9 @@ class SupplyController extends Controller
             }
         }
 
-        $supply->update([
-            'name' => $validated['name'],
-            'code' => $validated['code'],
-            'category' => $validated['category'],
-            'description' => $validated['description'],
-            'unit' => $validated['unit'],
-            'stock_quantity' => $validated['stock_quantity'],
-            'minimum_stock' => $validated['minimum_stock'],
-            'unit_price' => $validated['unit_price'],
-            'supplier' => $validated['supplier'],
-            'location' => $validated['location'],
-            'notes' => $validated['notes'],
-            'photos' => $photos
-        ]);
+        $validated['photos'] = $photos;
+
+        $supply->update($validated);
 
         return redirect()
             ->route('supplies.index')
@@ -274,5 +262,15 @@ class SupplyController extends Controller
             ->get();
 
         return view('supplies.movements', compact('supply', 'entries', 'exits'));
+    }
+
+    /**
+     * Generate a new unique SKU
+     */
+    public function generateSku()
+    {
+        return response()->json([
+            'sku' => Supply::generateSKU()
+        ]);
     }
 }

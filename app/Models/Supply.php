@@ -11,60 +11,70 @@ class Supply extends Model
 
     protected $fillable = [
         'name',
-        'description', 
-        'stock_quantity',
-        'minimum_stock',
+        'sku',
+        'category',
         'unit_price',
         'supplier',
-        'category',
+        'stock_quantity',
+        'minimum_stock',
+        'unit',
+        'location',
+        'description',
+        'notes',
         'photos'
     ];
 
     protected $casts = [
-        'stock_quantity' => 'integer',
-        'minimum_stock' => 'integer',
+        'photos' => 'array',
         'unit_price' => 'decimal:2',
-        'photos' => 'array'
+        'stock_quantity' => 'decimal:2',
+        'minimum_stock' => 'decimal:2'
     ];
 
-    public function stockEntries()
+    public static function boot()
     {
-        return $this->hasMany(StockEntry::class);
+        parent::boot();
+
+        static::creating(function ($supply) {
+            if (!$supply->sku) {
+                $supply->sku = self::generateSKU();
+            }
+        });
     }
 
-    public function stockExits() 
+    public static function generateSKU()
     {
-        return $this->hasMany(StockExit::class);
+        $lastSupply = self::orderBy('id', 'desc')->first();
+        $nextNumber = $lastSupply ? (intval(substr($lastSupply->sku, 4)) + 1) : 1;
+        return 'SKU-' . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
     }
 
-    public function isLowStock()
+    public function isLowStock(): bool
     {
         return $this->stock_quantity <= $this->minimum_stock;
     }
 
-    public function addStock($quantity, $notes = null)
+    public static function getCategories()
     {
-        $this->stock_quantity += $quantity;
-        $this->save();
-
-        return $this->stockEntries()->create([
-            'quantity' => $quantity,
-            'notes' => $notes
-        ]);
+        return self::distinct()->pluck('category')->sort()->values();
     }
 
-    public function removeStock($quantity, $notes = null)
+    public static function getSuppliers()
     {
-        if ($this->stock_quantity < $quantity) {
-            throw new \Exception('Insufficient stock');
-        }
+        return self::distinct()->pluck('supplier')->filter()->sort()->values();
+    }
 
-        $this->stock_quantity -= $quantity;
-        $this->save();
-
-        return $this->stockExits()->create([
-            'quantity' => $quantity,
-            'notes' => $notes
-        ]);
+    public static function getUnits()
+    {
+        return [
+            'UN' => 'Unidade',
+            'CX' => 'Caixa',
+            'PC' => 'Peça',
+            'KG' => 'Quilograma',
+            'L' => 'Litro',
+            'M' => 'Metro',
+            'M2' => 'Metro Quadrado',
+            'M3' => 'Metro Cúbico'
+        ];
     }
 }

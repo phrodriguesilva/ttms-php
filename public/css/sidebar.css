@@ -1,0 +1,118 @@
+/* Sidebar Styles */
+.nav-item {
+    width: 100%;
+}
+
+.nav-link {
+    color: #6c757d;
+    padding: 0.5rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+    font-size: 0.95rem;
+}
+
+.nav-link:hover {
+    color: #0d6efd;
+    background-color: rgba(13, 110, 253, 0.1);
+}
+
+.nav-link.active {
+    color: #0d6efd;
+    background-color: rgba(13, 110, 253, 0.1);
+    font-weight: 500;
+}
+
+.nav-link i {
+    width: 1.25rem;
+    text-align: center;
+}
+
+/* Submenu Styles */
+.nav-item .nav-item {
+    margin-left: 0.5rem;
+}
+
+.nav-item .nav-link {
+    font-size: 0.9rem;
+}
+
+.nav-item .nav-item .nav-link {
+    padding-left: 2rem;
+    border-left: 2px solid #dee2e6;
+    transition: border-color 0.3s ease;
+}
+
+.nav-item .nav-item .nav-link:hover,
+.nav-item .nav-item .nav-link.active {
+    border-left-color: #0d6efd;
+}
+
+/* Collapsible Submenu */
+.nav-item > ul {
+    display: none;
+    margin-top: 0.25rem;
+    margin-bottom: 0.25rem;
+}
+
+.nav-item:hover > ul,
+.nav-item > a.active + ul {
+    display: block;
+}
+
+/* Animation */
+.nav-item > ul {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Scrollbar */
+.sidebar {
+    max-height: 100vh;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #6c757d transparent;
+}
+
+.sidebar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+    background-color: #6c757d;
+    border-radius: 3px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .nav-link span {
+        display: none;
+    }
+    
+    .nav-link i {
+        font-size: 1.25rem;
+    }
+    
+    .nav-item .nav-item .nav-link {
+        padding-left: 1.5rem;
+    }
+    
+    .nav-item .nav-item .nav-item .nav-link {
+        padding-left: 2rem;
+    }
+}

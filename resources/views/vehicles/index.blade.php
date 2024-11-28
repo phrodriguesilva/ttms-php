@@ -14,12 +14,12 @@
         <div class="card mb-4">
             <div class="card-body">
                 <form action="{{ route('vehicles.index') }}" method="GET" class="row g-3">
-                    <div class="col-md-3">
+                    <div class="col-md-4">
                         <input type="text" name="search" class="form-control" placeholder="Buscar veículos..." value="{{ request('search') }}">
                     </div>
                     <div class="col-md-3">
                         <select name="status" class="form-select">
-                            <option value="">Status</option>
+                            <option value="">Todos os status</option>
                             <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Ativo</option>
                             <option value="maintenance" {{ request('status') == 'maintenance' ? 'selected' : '' }}>Em Manutenção</option>
                             <option value="inactive" {{ request('status') == 'inactive' ? 'selected' : '' }}>Inativo</option>
@@ -27,14 +27,14 @@
                     </div>
                     <div class="col-md-3">
                         <select name="type" class="form-select">
-                            <option value="">Tipo</option>
+                            <option value="">Todos os tipos</option>
                             <option value="car" {{ request('type') == 'car' ? 'selected' : '' }}>Carro</option>
                             <option value="van" {{ request('type') == 'van' ? 'selected' : '' }}>Van</option>
                             <option value="bus" {{ request('type') == 'bus' ? 'selected' : '' }}>Ônibus</option>
                         </select>
                     </div>
-                    <div class="col-md-3">
-                        <button type="submit" class="btn btn-primary w-100">
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-secondary w-100">
                             <i class="fas fa-search"></i> Filtrar
                         </button>
                     </div>

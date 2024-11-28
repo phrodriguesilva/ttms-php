@@ -65,14 +65,19 @@
                             <div class="row mb-3">
                                 <div class="col-md-4">
                                     <label for="client_id" class="form-label">Cliente</label>
-                                    <select class="form-select @error('client_id') is-invalid @enderror" id="client_id" name="client_id" required>
-                                        <option value="">Selecione um cliente...</option>
-                                        @foreach($clients as $client)
-                                            <option value="{{ $client->id }}" {{ old('client_id') == $client->id ? 'selected' : '' }}>
-                                                {{ $client->name }}
-                                            </option>
-                                        @endforeach
-                                    </select>
+                                    <div class="input-group">
+                                        <select class="form-select @error('client_id') is-invalid @enderror" id="client_id" name="client_id" required>
+                                            <option value="">Selecione um cliente...</option>
+                                            @foreach($clients as $client)
+                                                <option value="{{ $client->id }}" {{ old('client_id') == $client->id ? 'selected' : '' }}>
+                                                    {{ $client->name }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                        <a href="{{ route('clients.create') }}" class="btn btn-outline-primary" target="_blank">
+                                            <i class="fas fa-plus"></i> Novo
+                                        </a>
+                                    </div>
                                 </div>
                                 <div class="col-md-4">
                                     <label for="account_type" class="form-label">Tipo de Conta</label>

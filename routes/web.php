@@ -35,7 +35,10 @@ Route::middleware(['auth'])->group(function () {
 
     // Clients routes
     Route::resource('clients', ClientController::class);
+    Route::post('/clients/import', [ClientController::class, 'import'])->name('clients.import');
+    Route::get('/clients/export', [ClientController::class, 'export'])->name('clients.export');
 
     // Supplies routes
     Route::resource('supplies', SupplyController::class);
+    Route::get('/supplies/generate-sku', [SupplyController::class, 'generateSku'])->name('supplies.generate-sku');
 });
