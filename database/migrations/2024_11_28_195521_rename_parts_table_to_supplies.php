@@ -8,6 +8,22 @@ return new class extends Migration
 {
     public function up()
     {
+        // Ensure the supplies table exists
+        if (!Schema::hasTable('supplies')) {
+            Schema::create('supplies', function (Blueprint $table) {
+                $table->id();
+                $table->string('name');
+                $table->string('category');
+                $table->string('unit_of_measurement');
+                $table->decimal('current_quantity', 10, 2)->default(0);
+                $table->decimal('stock_quantity', 10, 2)->default(0);
+                $table->integer('minimum_stock')->default(0);
+                $table->timestamps();
+                $table->softDeletes();
+            });
+        }
+
+        // Rename parts table to supplies if it exists
         if (Schema::hasTable('parts') && !Schema::hasTable('supplies')) {
             Schema::rename('parts', 'supplies');
         }
@@ -32,7 +48,7 @@ return new class extends Migration
 
             // Add minimum_stock if it doesn't exist
             if (!Schema::hasColumn('supplies', 'minimum_stock')) {
-                $table->integer('minimum_stock')->default(0)->after('stock_quantity');
+                $table->integer('minimum_stock')->default(0);
             }
         });
     }
@@ -53,6 +69,7 @@ return new class extends Migration
             }
         });
 
+        // Revert rename if possible
         if (Schema::hasTable('supplies') && !Schema::hasTable('parts')) {
             Schema::rename('supplies', 'parts');
         }

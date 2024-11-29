@@ -1,132 +1,233 @@
 @extends('layouts.app')
 
-@section('content')
-<div class="row">
-    <div class="col-12">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2>Aeroportos</h2>
-            <a href="{{ route('airports.create') }}" class="btn btn-primary">
-                <i class="fas fa-plus"></i> Novo Aeroporto
-            </a>
-        </div>
+@push('styles')
+<style>
+    /* Cabeçalho fixo da tabela */
+    .table-sticky-header {
+        position: sticky;
+        top: 0;
+        background-color: white;
+        z-index: 10;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
 
-        <!-- Search and filters -->
-        <div class="card mb-4">
-            <div class="card-body">
-                <form action="{{ route('airports.index') }}" method="GET" class="row g-3">
-                    <div class="col-md-4">
-                        <input type="text" name="search" class="form-control" placeholder="Buscar aeroportos..." value="{{ request('search') }}">
-                    </div>
-                    <div class="col-md-3">
-                        <select name="state" class="form-select">
-                            <option value="">Todos os estados</option>
-                            <option value="AC" {{ request('state') == 'AC' ? 'selected' : '' }}>Acre</option>
-                            <option value="AL" {{ request('state') == 'AL' ? 'selected' : '' }}>Alagoas</option>
-                            <option value="AP" {{ request('state') == 'AP' ? 'selected' : '' }}>Amapá</option>
-                            <option value="AM" {{ request('state') == 'AM' ? 'selected' : '' }}>Amazonas</option>
-                            <option value="BA" {{ request('state') == 'BA' ? 'selected' : '' }}>Bahia</option>
-                            <option value="CE" {{ request('state') == 'CE' ? 'selected' : '' }}>Ceará</option>
-                            <option value="DF" {{ request('state') == 'DF' ? 'selected' : '' }}>Distrito Federal</option>
-                            <option value="ES" {{ request('state') == 'ES' ? 'selected' : '' }}>Espírito Santo</option>
-                            <option value="GO" {{ request('state') == 'GO' ? 'selected' : '' }}>Goiás</option>
-                            <option value="MA" {{ request('state') == 'MA' ? 'selected' : '' }}>Maranhão</option>
-                            <option value="MT" {{ request('state') == 'MT' ? 'selected' : '' }}>Mato Grosso</option>
-                            <option value="MS" {{ request('state') == 'MS' ? 'selected' : '' }}>Mato Grosso do Sul</option>
-                            <option value="MG" {{ request('state') == 'MG' ? 'selected' : '' }}>Minas Gerais</option>
-                            <option value="PA" {{ request('state') == 'PA' ? 'selected' : '' }}>Pará</option>
-                            <option value="PB" {{ request('state') == 'PB' ? 'selected' : '' }}>Paraíba</option>
-                            <option value="PR" {{ request('state') == 'PR' ? 'selected' : '' }}>Paraná</option>
-                            <option value="PE" {{ request('state') == 'PE' ? 'selected' : '' }}>Pernambuco</option>
-                            <option value="PI" {{ request('state') == 'PI' ? 'selected' : '' }}>Piauí</option>
-                            <option value="RJ" {{ request('state') == 'RJ' ? 'selected' : '' }}>Rio de Janeiro</option>
-                            <option value="RN" {{ request('state') == 'RN' ? 'selected' : '' }}>Rio Grande do Norte</option>
-                            <option value="RS" {{ request('state') == 'RS' ? 'selected' : '' }}>Rio Grande do Sul</option>
-                            <option value="RO" {{ request('state') == 'RO' ? 'selected' : '' }}>Rondônia</option>
-                            <option value="RR" {{ request('state') == 'RR' ? 'selected' : '' }}>Roraima</option>
-                            <option value="SC" {{ request('state') == 'SC' ? 'selected' : '' }}>Santa Catarina</option>
-                            <option value="SP" {{ request('state') == 'SP' ? 'selected' : '' }}>São Paulo</option>
-                            <option value="SE" {{ request('state') == 'SE' ? 'selected' : '' }}>Sergipe</option>
-                            <option value="TO" {{ request('state') == 'TO' ? 'selected' : '' }}>Tocantins</option>
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <select name="status" class="form-select">
-                            <option value="">Todos os status</option>
-                            <option value="1" {{ request('status') == '1' ? 'selected' : '' }}>Ativo</option>
-                            <option value="0" {{ request('status') == '0' ? 'selected' : '' }}>Inativo</option>
-                        </select>
-                    </div>
-                    <div class="col-md-2">
-                        <button type="submit" class="btn btn-secondary w-100">
-                            <i class="fas fa-search"></i> Filtrar
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
+    /* Estilos para status dos aeroportos */
+    .airport-status {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.25rem;
+        font-size: 0.8rem;
+    }
+    .airport-status i {
+        margin-right: 0.25rem;
+    }
+    .airport-status-active { 
+        background-color: rgba(25, 135, 84, 0.1); 
+        color: #198754; 
+    }
+    .airport-status-inactive { 
+        background-color: rgba(220, 53, 69, 0.1); 
+        color: #dc3545; 
+    }
 
-        <!-- Airports list -->
-        <div class="card">
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead>
-                            <tr>
-                                <th>Nome</th>
-                                <th>Código</th>
-                                <th>Cidade</th>
-                                <th>Estado</th>
-                                <th>Status</th>
-                                <th>Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($airports as $airport)
-                                <tr>
-                                    <td>{{ $airport->name }}</td>
-                                    <td>{{ $airport->code }}</td>
-                                    <td>{{ $airport->city }}</td>
-                                    <td>{{ $airport->state }}</td>
-                                    <td>
-                                        <span class="badge bg-{{ $airport->is_active ? 'success' : 'danger' }}">
-                                            {{ $airport->is_active ? 'Ativo' : 'Inativo' }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <div class="btn-group">
-                                            <a href="{{ route('airports.edit', $airport) }}" class="btn btn-sm btn-warning">
-                                                <i class="fas fa-edit"></i>
-                                            </a>
-                                            <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal" data-airport-id="{{ $airport->id }}">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="6" class="text-center py-4">
-                                        <div class="d-flex flex-column align-items-center">
-                                            <i class="fas fa-plane fa-3x text-muted mb-3"></i>
-                                            <p class="h5 text-muted">Nenhum aeroporto encontrado</p>
-                                            <p class="text-muted">Clique no botão "Novo Aeroporto" para adicionar um aeroporto</p>
-                                        </div>
-                                    </td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
+    /* Hover para linhas da tabela */
+    .table-hover tbody tr:hover {
+        background-color: rgba(0, 123, 255, 0.05);
+        transition: background-color 0.3s ease;
+    }
+
+    /* Estilos para ordenação de colunas */
+    .sortable {
+        cursor: pointer;
+        user-select: none;
+        transition: background-color 0.2s ease;
+    }
+    .sortable:hover {
+        background-color: rgba(0, 123, 255, 0.05);
+    }
+</style>
+@endpush
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Cabeçalho e Filtros -->
+            <div class="card mb-3">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <h2 class="mb-0">Aeroportos</h2>
+                        </div>
+                        <div class="col-md-6 text-md-end">
+                            <a href="{{ route('airports.create') }}" class="btn btn-primary">
+                                <i class="fas fa-plus me-2"></i>Novo Aeroporto
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- Filtros -->
+                    <hr class="my-3">
+                    <form action="{{ route('airports.index') }}" method="GET">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <input type="text" name="search" class="form-control" placeholder="Buscar aeroportos..." value="{{ request('search') }}">
+                            </div>
+                            <div class="col-md-3">
+                                <select name="state" class="form-select">
+                                    <option value="">Todos os estados</option>
+                                    @php
+                                    $states = [
+                                        'AC' => 'Acre', 'AL' => 'Alagoas', 'AP' => 'Amapá', 
+                                        'AM' => 'Amazonas', 'BA' => 'Bahia', 'CE' => 'Ceará', 
+                                        'DF' => 'Distrito Federal', 'ES' => 'Espírito Santo', 
+                                        'GO' => 'Goiás', 'MA' => 'Maranhão', 'MT' => 'Mato Grosso', 
+                                        'MS' => 'Mato Grosso do Sul', 'MG' => 'Minas Gerais', 
+                                        'PA' => 'Pará', 'PB' => 'Paraíba', 'PR' => 'Paraná', 
+                                        'PE' => 'Pernambuco', 'PI' => 'Piauí', 'RJ' => 'Rio de Janeiro', 
+                                        'RN' => 'Rio Grande do Norte', 'RS' => 'Rio Grande do Sul', 
+                                        'RO' => 'Rondônia', 'RR' => 'Roraima', 'SC' => 'Santa Catarina', 
+                                        'SP' => 'São Paulo', 'SE' => 'Sergipe', 'TO' => 'Tocantins'
+                                    ];
+                                    @endphp
+                                    @foreach($states as $code => $name)
+                                        <option value="{{ $code }}" {{ request('state') == $code ? 'selected' : '' }}>
+                                            {{ $name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <select name="status" class="form-select">
+                                    <option value="">Todos os status</option>
+                                    <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Ativos</option>
+                                    <option value="inactive" {{ request('status') == 'inactive' ? 'selected' : '' }}>Inativos</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="fas fa-filter me-2"></i>Filtrar
+                                </button>
+                            </div>
+                        </div>
+                    </form>
                 </div>
+            </div>
 
-                <div class="d-flex justify-content-end mt-3">
-                    {{ $airports->links() }}
+            <!-- Tabela de Aeroportos -->
+            <div class="card">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0" id="airportsTable">
+                            <thead class="table-light table-sticky-header">
+                                <tr>
+                                    <th class="sortable" data-sort="name" data-direction="{{ request('sort') == 'name' && request('direction') == 'asc' ? 'desc' : 'asc' }}">
+                                        Nome 
+                                        @if(request('sort') == 'name')
+                                            <i class="fas fa-sort-{{ request('direction') == 'asc' ? 'up' : 'down' }} ms-1"></i>
+                                        @else
+                                            <i class="fas fa-sort text-muted ms-1"></i>
+                                        @endif
+                                    </th>
+                                    <th class="sortable" data-sort="code" data-direction="{{ request('sort') == 'code' && request('direction') == 'asc' ? 'desc' : 'asc' }}">
+                                        Código 
+                                        @if(request('sort') == 'code')
+                                            <i class="fas fa-sort-{{ request('direction') == 'asc' ? 'up' : 'down' }} ms-1"></i>
+                                        @else
+                                            <i class="fas fa-sort text-muted ms-1"></i>
+                                        @endif
+                                    </th>
+                                    <th class="sortable" data-sort="city" data-direction="{{ request('sort') == 'city' && request('direction') == 'asc' ? 'desc' : 'asc' }}">
+                                        Cidade 
+                                        @if(request('sort') == 'city')
+                                            <i class="fas fa-sort-{{ request('direction') == 'asc' ? 'up' : 'down' }} ms-1"></i>
+                                        @else
+                                            <i class="fas fa-sort text-muted ms-1"></i>
+                                        @endif
+                                    </th>
+                                    <th class="sortable" data-sort="state" data-direction="{{ request('sort') == 'state' && request('direction') == 'asc' ? 'desc' : 'asc' }}">
+                                        Estado 
+                                        @if(request('sort') == 'state')
+                                            <i class="fas fa-sort-{{ request('direction') == 'asc' ? 'up' : 'down' }} ms-1"></i>
+                                        @else
+                                            <i class="fas fa-sort text-muted ms-1"></i>
+                                        @endif
+                                    </th>
+                                    <th class="sortable" data-sort="status" data-direction="{{ request('sort') == 'status' && request('direction') == 'asc' ? 'desc' : 'asc' }}">
+                                        Status 
+                                        @if(request('sort') == 'status')
+                                            <i class="fas fa-sort-{{ request('direction') == 'asc' ? 'up' : 'down' }} ms-1"></i>
+                                        @else
+                                            <i class="fas fa-sort text-muted ms-1"></i>
+                                        @endif
+                                    </th>
+                                    <th class="text-center">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($airports as $airport)
+                                    <tr>
+                                        <td>{{ $airport->name }}</td>
+                                        <td>{{ $airport->code }}</td>
+                                        <td>{{ $airport->city }}</td>
+                                        <td>{{ $airport->state }}</td>
+                                        <td>
+                                            <span class="airport-status airport-status-{{ $airport->status }}">
+                                                <i class="fas fa-{{ $airport->status == 'active' ? 'check-circle' : 'times-circle' }}"></i>
+                                                {{ $airport->status == 'active' ? 'Ativo' : 'Inativo' }}
+                                            </span>
+                                        </td>
+                                        <td class="text-center">
+                                            <div class="btn-group" role="group">
+                                                <a href="{{ route('airports.show', $airport->id) }}" class="btn btn-sm btn-outline-info" title="Detalhes">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a href="{{ route('airports.edit', $airport->id) }}" class="btn btn-sm btn-outline-primary" title="Editar">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <button type="button" class="btn btn-sm btn-outline-danger delete-btn" 
+                                                    data-id="{{ $airport->id }}" 
+                                                    data-name="{{ $airport->name }}"
+                                                    title="Excluir">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="6" class="text-center py-4">
+                                            <div class="d-flex flex-column align-items-center">
+                                                <i class="fas fa-car text-muted mb-3" style="font-size: 3rem;"></i>
+                                                <h5 class="text-muted">Nenhum aeroporto encontrado</h5>
+                                                <p class="text-muted">Adicione um novo aeroporto para começar</p>
+                                                <a href="{{ route('airports.create') }}" class="btn btn-primary mt-2">
+                                                    <i class="fas fa-plus me-2"></i>Novo Aeroporto
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Paginação -->
+                    <div class="card-footer d-flex justify-content-between align-items-center">
+                        <div class="text-muted">
+                            Mostrando {{ $airports->firstItem() }} a {{ $airports->lastItem() }} de {{ $airports->total() }} aeroportos
+                        </div>
+                        <div>
+                            {{ $airports->appends(request()->query())->links() }}
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Delete confirmation modal -->
+<!-- Modal de Confirmação de Exclusão -->
 <div class="modal fade" id="deleteModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -135,11 +236,11 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <p>Tem certeza que deseja excluir este aeroporto?</p>
+                Tem certeza que deseja excluir o aeroporto <strong id="deleteAirportName"></strong>?
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <form id="deleteForm" action="" method="POST" class="d-inline">
+                <form id="deleteForm" method="POST">
                     @csrf
                     @method('DELETE')
                     <button type="submit" class="btn btn-danger">Excluir</button>
@@ -152,16 +253,31 @@
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const deleteModal = document.getElementById('deleteModal');
-        if (deleteModal) {
-            deleteModal.addEventListener('show.bs.modal', function(event) {
-                const button = event.relatedTarget;
-                const airportId = button.getAttribute('data-airport-id');
-                const form = this.querySelector('#deleteForm');
-                form.action = `/airports/${airportId}`;
+        // Configuração de ordenação de colunas
+        const sortableHeaders = document.querySelectorAll('.sortable');
+        sortableHeaders.forEach(header => {
+            header.addEventListener('click', function() {
+                const sort = this.dataset.sort;
+                const direction = this.dataset.direction;
+                window.location.href = '{{ route('airports.index') }}?sort=' + sort + '&direction=' + direction;
             });
-        }
+        });
+
+        // Configuração de exclusão de aeroporto
+        const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+        const deleteForm = document.getElementById('deleteForm');
+        const deleteAirportName = document.getElementById('deleteAirportName');
+
+        document.querySelectorAll('.delete-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const airportId = this.dataset.id;
+                const airportName = this.dataset.name;
+                
+                deleteAirportName.textContent = airportName;
+                deleteForm.action = '{{ route('airports.index') }}/' + airportId;
+                deleteModal.show();
+            });
+        });
     });
 </script>
 @endpush
-@endsection

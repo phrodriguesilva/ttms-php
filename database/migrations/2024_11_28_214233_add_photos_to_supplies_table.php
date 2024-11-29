@@ -12,17 +12,39 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('supplies', function (Blueprint $table) {
-            $table->string('sku')->unique()->after('id');
-            $table->json('photos')->nullable();
-            $table->string('category')->after('name');
-            $table->decimal('unit_price', 10, 2)->default(0)->after('category');
-            $table->string('supplier')->nullable()->after('unit_price');
-            $table->decimal('stock_quantity', 10, 2)->default(0)->after('supplier');
-            $table->decimal('minimum_stock', 10, 2)->default(0)->after('stock_quantity');
-            $table->string('unit')->default('UN')->after('minimum_stock');
-            $table->string('location')->nullable()->after('unit');
-            $table->text('description')->nullable()->after('location');
-            $table->text('notes')->nullable()->after('description');
+            if (!Schema::hasColumn('supplies', 'sku')) {
+                $table->string('sku')->unique()->after('id');
+            }
+            if (!Schema::hasColumn('supplies', 'photos')) {
+                $table->json('photos')->nullable();
+            }
+            if (!Schema::hasColumn('supplies', 'category')) {
+                $table->string('category')->after('name');
+            }
+            if (!Schema::hasColumn('supplies', 'unit_price')) {
+                $table->decimal('unit_price', 10, 2)->default(0)->after('category');
+            }
+            if (!Schema::hasColumn('supplies', 'supplier')) {
+                $table->string('supplier')->nullable()->after('unit_price');
+            }
+            if (!Schema::hasColumn('supplies', 'stock_quantity')) {
+                $table->decimal('stock_quantity', 10, 2)->default(0)->after('supplier');
+            }
+            if (!Schema::hasColumn('supplies', 'minimum_stock')) {
+                $table->decimal('minimum_stock', 10, 2)->default(0)->after('stock_quantity');
+            }
+            if (!Schema::hasColumn('supplies', 'unit')) {
+                $table->string('unit')->default('UN')->after('minimum_stock');
+            }
+            if (!Schema::hasColumn('supplies', 'location')) {
+                $table->string('location')->nullable()->after('unit');
+            }
+            if (!Schema::hasColumn('supplies', 'description')) {
+                $table->text('description')->nullable()->after('location');
+            }
+            if (!Schema::hasColumn('supplies', 'notes')) {
+                $table->text('notes')->nullable()->after('description');
+            }
         });
     }
 

@@ -10,10 +10,10 @@ return new class extends Migration
     {
         Schema::create('booking_status_history', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('booking_id')->constrained()->onDelete('cascade');
+            $table->unsignedBigInteger('booking_id')->nullable();
             $table->string('status');
             $table->string('comment')->nullable();
-            $table->foreignId('changed_by')->nullable()->constrained('users')->onDelete('set null');
+            $table->unsignedBigInteger('changed_by')->nullable();
             $table->timestamps();
         });
     }

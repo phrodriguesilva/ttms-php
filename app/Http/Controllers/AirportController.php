@@ -10,9 +10,42 @@ class AirportController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $airports = Airport::orderBy('name')->paginate(10);
+        $query = Airport::query();
+
+        // Search by name or code
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('code', 'like', "%{$search}%");
+            });
+        }
+
+        // Filter by state
+        if ($request->filled('state')) {
+            $query->where('state', $request->input('state'));
+        }
+
+        // Filter by status
+        if ($request->filled('status')) {
+            $query->where('status', $request->input('status'));
+        }
+
+        // Sorting
+        $sortField = $request->input('sort', 'name');
+        $sortDirection = $request->input('direction', 'asc');
+        
+        // Validate sort field to prevent SQL injection
+        $allowedSortFields = ['name', 'code', 'city', 'state', 'country', 'status'];
+        $sortField = in_array($sortField, $allowedSortFields) ? $sortField : 'name';
+        $sortDirection = in_array(strtolower($sortDirection), ['asc', 'desc']) ? $sortDirection : 'asc';
+
+        $query->orderBy($sortField, $sortDirection);
+
+        $airports = $query->paginate(10);
+
         return view('airports.index', compact('airports'));
     }
 
@@ -29,21 +62,19 @@ class AirportController extends Controller
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
+        $validatedData = $request->validate([
             'name' => 'required|string|max:255',
-            'code' => 'required|string|max:10|unique:airports',
-            'address' => 'required|string|max:255',
+            'code' => 'required|string|unique:airports,code',
             'city' => 'required|string|max:255',
-            'state' => 'required|string|size:2',
-            'latitude' => 'nullable|numeric',
-            'longitude' => 'nullable|numeric',
-            'is_active' => 'boolean'
+            'state' => 'required|string|max:255',
+            'country' => 'required|string|max:255',
+            'status' => 'in:active,inactive',
         ]);
 
-        Airport::create($validated);
+        $airport = Airport::create($validatedData);
 
         return redirect()->route('airports.index')
-            ->with('success', 'Aeroporto cadastrado com sucesso.');
+            ->with('success', 'Airport created successfully.');
     }
 
     /**
@@ -59,21 +90,19 @@ class AirportController extends Controller
      */
     public function update(Request $request, Airport $airport)
     {
-        $validated = $request->validate([
+        $validatedData = $request->validate([
             'name' => 'required|string|max:255',
-            'code' => 'required|string|max:10|unique:airports,code,' . $airport->id,
-            'address' => 'required|string|max:255',
+            'code' => 'required|string|unique:airports,code,' . $airport->id,
             'city' => 'required|string|max:255',
-            'state' => 'required|string|size:2',
-            'latitude' => 'nullable|numeric',
-            'longitude' => 'nullable|numeric',
-            'is_active' => 'boolean'
+            'state' => 'required|string|max:255',
+            'country' => 'required|string|max:255',
+            'status' => 'in:active,inactive',
         ]);
 
-        $airport->update($validated);
+        $airport->update($validatedData);
 
         return redirect()->route('airports.index')
-            ->with('success', 'Aeroporto atualizado com sucesso.');
+            ->with('success', 'Airport updated successfully.');
     }
 
     /**
@@ -82,7 +111,8 @@ class AirportController extends Controller
     public function destroy(Airport $airport)
     {
         $airport->delete();
+
         return redirect()->route('airports.index')
-            ->with('success', 'Aeroporto removido com sucesso.');
+            ->with('success', 'Airport deleted successfully.');
     }
 }

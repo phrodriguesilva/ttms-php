@@ -16,22 +16,41 @@ class DriverController extends Controller
     {
         $query = Driver::query();
 
-        // Apply search filter if provided
-        if ($request->has('search')) {
+        // Filtro de busca por nome, CNH, email
+        if ($request->filled('search')) {
             $search = $request->get('search');
             $query->where(function($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
                   ->orWhere('license_number', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%");
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('phone', 'like', "%{$search}%");
             });
         }
 
-        // Apply status filter if provided
-        if ($request->has('status') && $request->get('status')) {
+        // Filtro por status
+        if ($request->filled('status')) {
             $query->where('status', $request->get('status'));
         }
 
-        $drivers = $query->orderBy('name')->paginate(10);
+        // Ordenação
+        $sortField = $request->get('sort', 'name');
+        $sortDirection = $request->get('direction', 'asc');
+
+        // Validar campos de ordenação
+        $allowedSortFields = ['name', 'license_number', 'license_expiry', 'email', 'status'];
+        $sortField = in_array($sortField, $allowedSortFields) ? $sortField : 'name';
+        $sortDirection = in_array(strtolower($sortDirection), ['asc', 'desc']) ? $sortDirection : 'asc';
+
+        $drivers = $query->orderBy($sortField, $sortDirection)
+                         ->paginate(10)
+                         ->withQueryString(); // Preservar parâmetros da query
+
+        // Adicionar informações de status
+        $drivers->each(function($driver) {
+            $driver->status_color = $driver->status === 'active' ? 'success' : 'danger';
+            $driver->status_text = $driver->status === 'active' ? 'Ativo' : 'Inativo';
+        });
+
         return view('drivers.index', compact('drivers'));
     }
 

@@ -16,31 +16,45 @@ class VehicleController extends Controller
     {
         $query = Vehicle::query();
 
-        // Apply search filter
-        if ($request->has('search')) {
+        // Filtro de busca por placa, modelo ou marca
+        if ($request->filled('search')) {
             $search = $request->get('search');
             $query->where(function($q) use ($search) {
-                $q->where('license_plate', 'like', "%{$search}%")
+                $q->where('plate', 'like', "%{$search}%")
                   ->orWhere('model', 'like', "%{$search}%")
-                  ->orWhere('make', 'like', "%{$search}%");
+                  ->orWhere('brand', 'like', "%{$search}%");
             });
         }
 
-        // Apply status filter
-        if ($request->has('status') && $request->get('status')) {
+        // Filtro por status
+        if ($request->filled('status')) {
             $query->where('status', $request->get('status'));
         }
 
-        $vehicles = $query->orderBy('updated_at', 'desc')
-                         ->paginate(10);
+        // Filtro por ano
+        if ($request->filled('year')) {
+            $query->where('year', $request->get('year'));
+        }
 
-        // Add status color for badges
+        // Ordenação
+        $sortField = $request->get('sort', 'updated_at');
+        $sortDirection = $request->get('direction', 'desc');
+
+        // Validar campos de ordenação para evitar injeção
+        $allowedSortFields = ['plate', 'model', 'brand', 'year', 'status', 'updated_at'];
+        $sortField = in_array($sortField, $allowedSortFields) ? $sortField : 'updated_at';
+        $sortDirection = in_array(strtolower($sortDirection), ['asc', 'desc']) ? $sortDirection : 'desc';
+
+        $vehicles = $query->orderBy($sortField, $sortDirection)
+                         ->paginate(10)
+                         ->withQueryString(); // Preservar parâmetros da query
+
+        // Adicionar informações de status para badges
         $vehicles->each(function($vehicle) {
             $vehicle->status_color = match($vehicle->status) {
-                'available' => 'success',
-                'maintenance' => 'warning',
-                'booked' => 'danger',
-                'out_of_service' => 'danger',
+                'Ativo' => 'success',
+                'Manutenção' => 'warning',
+                'Inativo' => 'danger',
                 default => 'secondary'
             };
         });

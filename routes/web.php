@@ -11,7 +11,10 @@ use App\Http\Controllers\SupplyController;
 use App\Http\Controllers\AirportController;
 
 Route::get('/', function () {
-    return redirect()->route('dashboard');
+    if (auth()->check()) {
+        return redirect()->route('dashboard');
+    }
+    return redirect()->route('login');
 });
 
 Auth::routes();

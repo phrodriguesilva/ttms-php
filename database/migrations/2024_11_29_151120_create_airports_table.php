@@ -14,13 +14,21 @@ return new class extends Migration
         Schema::create('airports', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('code')->unique(); // Código IATA do aeroporto
-            $table->string('address');
+            $table->string('code')->unique();
             $table->string('city');
-            $table->string('state', 2);
-            $table->decimal('latitude', 10, 8)->nullable();
-            $table->decimal('longitude', 11, 8)->nullable();
-            $table->boolean('is_active')->default(true);
+            $table->string('state');
+            $table->string('country');
+            $table->decimal('latitude', 10, 7)->nullable();
+            $table->decimal('longitude', 10, 7)->nullable();
+            $table->enum('status', ['active', 'inactive'])->default('active');
+            $table->string('airport_type')->nullable();
+            $table->string('airport_size')->nullable();
+            $table->string('runway_length')->nullable();
+            $table->string('runway_width')->nullable();
+            $table->string('terminal_count')->nullable();
+            $table->string('gate_count')->nullable();
+            $table->string('parking_capacity')->nullable();
+            $table->string('security_checkpoints')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });

@@ -1,245 +1,306 @@
 @extends('layouts.app')
 
+@push('styles')
+<style>
+    /* Cabeçalho fixo da tabela */
+    .table-sticky-header {
+        position: sticky;
+        top: 0;
+        background-color: white;
+        z-index: 10;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    /* Estilos para status dos veículos */
+    .vehicle-status {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.25rem;
+        font-size: 0.8rem;
+    }
+    .vehicle-status i {
+        margin-right: 0.25rem;
+    }
+    .vehicle-status-active { 
+        background-color: rgba(25, 135, 84, 0.1); 
+        color: #198754; 
+    }
+    .vehicle-status-maintenance { 
+        background-color: rgba(255, 193, 7, 0.1); 
+        color: #ffc107; 
+    }
+    .vehicle-status-inactive { 
+        background-color: rgba(220, 53, 69, 0.1); 
+        color: #dc3545; 
+    }
+
+    /* Hover para linhas da tabela */
+    .table-hover tbody tr:hover {
+        background-color: rgba(0, 123, 255, 0.05);
+        transition: background-color 0.3s ease;
+    }
+
+    /* Estilos para ordenação de colunas */
+    .sortable {
+        cursor: pointer;
+        user-select: none;
+        transition: background-color 0.2s ease;
+    }
+    .sortable:hover {
+        background-color: rgba(0, 123, 255, 0.05);
+    }
+    .sortable i {
+        margin-left: 0.5rem;
+        opacity: 0.5;
+        transition: opacity 0.2s ease;
+    }
+    .sortable:hover i {
+        opacity: 0.8;
+    }
+    .sortable i.fa-sort-up,
+    .sortable i.fa-sort-down {
+        opacity: 1;
+        color: #007bff;
+    }
+</style>
+@endpush
+
 @section('content')
-<div class="row">
-    <div class="col-12">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2>Veículos</h2>
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createVehicleModal">
-                <i class="fas fa-plus"></i> Novo Veículo
-            </button>
-        </div>
-
-        <!-- Search and filters -->
-        <div class="card mb-4">
-            <div class="card-body">
-                <form action="{{ route('vehicles.index') }}" method="GET" class="row g-3">
-                    <div class="col-md-4">
-                        <input type="text" name="search" class="form-control" placeholder="Buscar veículos..." value="{{ request('search') }}">
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Cabeçalho e Filtros -->
+            <div class="card mb-3">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <h4 class="card-title mb-3">Gerenciamento de Veículos</h4>
+                        </div>
+                        <div class="col-md-6 text-end">
+                            <a href="{{ route('vehicles.create') }}" class="btn btn-primary mb-3">
+                                <i class="fas fa-plus me-2"></i>Adicionar Veículo
+                            </a>
+                        </div>
                     </div>
-                    <div class="col-md-3">
-                        <select name="status" class="form-select">
-                            <option value="">Todos os status</option>
-                            <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Ativo</option>
-                            <option value="maintenance" {{ request('status') == 'maintenance' ? 'selected' : '' }}>Em Manutenção</option>
-                            <option value="inactive" {{ request('status') == 'inactive' ? 'selected' : '' }}>Inativo</option>
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <select name="type" class="form-select">
-                            <option value="">Todos os tipos</option>
-                            <option value="car" {{ request('type') == 'car' ? 'selected' : '' }}>Carro</option>
-                            <option value="van" {{ request('type') == 'van' ? 'selected' : '' }}>Van</option>
-                            <option value="bus" {{ request('type') == 'bus' ? 'selected' : '' }}>Ônibus</option>
-                        </select>
-                    </div>
-                    <div class="col-md-2">
-                        <button type="submit" class="btn btn-secondary w-100">
-                            <i class="fas fa-search"></i> Filtrar
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <!-- Vehicles list -->
-        <div class="card">
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead>
-                            <tr>
-                                <th>Placa</th>
-                                <th>Modelo</th>
-                                <th>Tipo</th>
-                                <th>Status</th>
-                                <th>Última Manutenção</th>
-                                <th>Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($vehicles as $vehicle)
-                                <tr>
-                                    <td>{{ $vehicle->plate }}</td>
-                                    <td>{{ $vehicle->model }}</td>
-                                    <td>{{ ucfirst($vehicle->type) }}</td>
-                                    <td>
-                                        <span class="badge bg-{{ $vehicle->status_color }}">
-                                            {{ $vehicle->status_text }}
-                                        </span>
-                                    </td>
-                                    <td>{{ $vehicle->last_maintenance ? $vehicle->last_maintenance->format('d/m/Y') : 'N/A' }}</td>
-                                    <td>
-                                        <div class="btn-group">
-                                            <a href="{{ route('vehicles.show', $vehicle->id) }}" class="btn btn-sm btn-info">
-                                                <i class="fas fa-eye"></i>
-                                            </a>
-                                            <a href="{{ route('vehicles.edit', $vehicle->id) }}" class="btn btn-sm btn-warning">
-                                                <i class="fas fa-edit"></i>
-                                            </a>
-                                            <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal" data-vehicle-id="{{ $vehicle->id }}">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="6" class="text-center py-4">
-                                        <div class="d-flex flex-column align-items-center">
-                                            <i class="fas fa-car fa-3x text-muted mb-3"></i>
-                                            <p class="h5 text-muted">Nenhum veículo encontrado</p>
-                                            <p class="text-muted">Clique no botão "Novo Veículo" para adicionar um veículo</p>
-                                        </div>
-                                    </td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="d-flex justify-content-end mt-3">
-                    {{ $vehicles->links() }}
+                    <form action="{{ route('vehicles.index') }}" method="GET" id="filterForm">
+                        <div class="row mb-3">
+                            <div class="col-md-3">
+                                <input type="text" name="search" class="form-control" placeholder="Buscar por placa, modelo ou marca" 
+                                       value="{{ request('search') }}">
+                            </div>
+                            <div class="col-md-2">
+                                <select name="status" class="form-select">
+                                    <option value="">Status</option>
+                                    <option value="Ativo" {{ request('status') == 'Ativo' ? 'selected' : '' }}>Ativo</option>
+                                    <option value="Manutenção" {{ request('status') == 'Manutenção' ? 'selected' : '' }}>Manutenção</option>
+                                    <option value="Inativo" {{ request('status') == 'Inativo' ? 'selected' : '' }}>Inativo</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <select name="year" class="form-select">
+                                    <option value="">Ano</option>
+                                    @php
+                                        $currentYear = date('Y');
+                                        $startYear = $currentYear - 20;
+                                    @endphp
+                                    @for($year = $currentYear; $year >= $startYear; $year--)
+                                        <option value="{{ $year }}" {{ request('year') == $year ? 'selected' : '' }}>
+                                            {{ $year }}
+                                        </option>
+                                    @endfor
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="input-group">
+                                    <button type="submit" class="btn btn-outline-primary">
+                                        <i class="fas fa-search me-2"></i>Filtrar
+                                    </button>
+                                    <a href="{{ route('vehicles.index') }}" class="btn btn-outline-secondary">
+                                        <i class="fas fa-sync me-2"></i>Limpar
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
                 </div>
             </div>
+
+            <!-- Tabela de Veículos -->
+            <div class="card">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0" id="vehiclesTable">
+                            <thead class="table-light table-sticky-header">
+                                <tr>
+                                    <th class="sortable" data-sort="plate" data-direction="{{ request('sort') == 'plate' && request('direction') == 'asc' ? 'desc' : 'asc' }}">
+                                        Placa 
+                                        <i class="fas fa-sort {{ 
+                                            request('sort') == 'plate' 
+                                                ? (request('direction') == 'asc' ? 'fa-sort-up' : 'fa-sort-down') 
+                                                : 'text-muted' 
+                                        }}"></i>
+                                    </th>
+                                    <th class="sortable" data-sort="model" data-direction="{{ request('sort') == 'model' && request('direction') == 'asc' ? 'desc' : 'asc' }}">
+                                        Modelo 
+                                        <i class="fas fa-sort {{ 
+                                            request('sort') == 'model' 
+                                                ? (request('direction') == 'asc' ? 'fa-sort-up' : 'fa-sort-down') 
+                                                : 'text-muted' 
+                                        }}"></i>
+                                    </th>
+                                    <th class="sortable" data-sort="year" data-direction="{{ request('sort') == 'year' && request('direction') == 'asc' ? 'desc' : 'asc' }}">
+                                        Ano 
+                                        <i class="fas fa-sort {{ 
+                                            request('sort') == 'year' 
+                                                ? (request('direction') == 'asc' ? 'fa-sort-up' : 'fa-sort-down') 
+                                                : 'text-muted' 
+                                        }}"></i>
+                                    </th>
+                                    <th class="sortable" data-sort="brand" data-direction="{{ request('sort') == 'brand' && request('direction') == 'asc' ? 'desc' : 'asc' }}">
+                                        Marca 
+                                        <i class="fas fa-sort {{ 
+                                            request('sort') == 'brand' 
+                                                ? (request('direction') == 'asc' ? 'fa-sort-up' : 'fa-sort-down') 
+                                                : 'text-muted' 
+                                        }}"></i>
+                                    </th>
+                                    <th class="sortable" data-sort="status" data-direction="{{ request('sort') == 'status' && request('direction') == 'asc' ? 'desc' : 'asc' }}">
+                                        Status 
+                                        <i class="fas fa-sort {{ 
+                                            request('sort') == 'status' 
+                                                ? (request('direction') == 'asc' ? 'fa-sort-up' : 'fa-sort-down') 
+                                                : 'text-muted' 
+                                        }}"></i>
+                                    </th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($vehicles as $vehicle)
+                                    <tr>
+                                        <td>{{ $vehicle->plate }}</td>
+                                        <td>{{ $vehicle->model }}</td>
+                                        <td>{{ $vehicle->year }}</td>
+                                        <td>{{ $vehicle->brand }}</td>
+                                        <td>
+                                            <span class="vehicle-status vehicle-status-{{ strtolower($vehicle->status) }}">
+                                                <i class="fas {{ $vehicle->status === 'Ativo' ? 'fa-check-circle' : ($vehicle->status === 'Manutenção' ? 'fa-wrench' : 'fa-times-circle') }}"></i>
+                                                {{ $vehicle->status }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <a href="{{ route('vehicles.edit', $vehicle->id) }}" 
+                                                   class="btn btn-sm btn-outline-primary" 
+                                                   data-bs-toggle="tooltip" 
+                                                   data-bs-placement="top" 
+                                                   title="Editar Veículo">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <button type="button" 
+                                                        class="btn btn-sm btn-outline-danger" 
+                                                        data-bs-toggle="modal" 
+                                                        data-bs-target="#deleteModal"
+                                                        data-vehicle-id="{{ $vehicle->id }}"
+                                                        data-bs-toggle="tooltip" 
+                                                        data-bs-placement="top" 
+                                                        title="Excluir Veículo">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="6" class="text-center py-4">
+                                            <div class="d-flex flex-column align-items-center">
+                                                <i class="fas fa-car text-muted mb-3" style="font-size: 3rem;"></i>
+                                                <h5 class="text-muted">Nenhum veículo encontrado</h5>
+                                                <p class="text-muted">Adicione um novo veículo para começar</p>
+                                                <a href="{{ route('vehicles.create') }}" class="btn btn-primary mt-2">
+                                                    <i class="fas fa-plus me-2"></i>Novo Veículo
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Paginação -->
+                    <div class="card-footer d-flex justify-content-between align-items-center">
+                        <div class="text-muted">
+                            Mostrando {{ $vehicles->firstItem() }} - {{ $vehicles->lastItem() }} de {{ $vehicles->total() }} veículos
+                        </div>
+                        {{ $vehicles->appends(request()->query())->links() }}
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
-
-<!-- Delete confirmation modal -->
-<div class="modal fade" id="deleteModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Confirmar Exclusão</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <p>Tem certeza que deseja excluir este veículo?</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <form id="deleteForm" method="POST" style="display: inline;">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="btn btn-danger">Excluir</button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Modal para criar novo veículo -->
-<div class="modal fade" id="createVehicleModal" tabindex="-1" aria-labelledby="createVehicleModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-xl">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="createVehicleModalLabel">Novo Veículo</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
-            </div>
-            <div class="modal-body">
-                <div id="createVehicleForm"></div>
-            </div>
-        </div>
-    </div>
-</div>
-
-@endsection
 
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Modal de criação de veículo
-        const modal = document.getElementById('createVehicleModal');
-        const formContainer = document.getElementById('createVehicleForm');
-        let formLoaded = false;
-
-        modal.addEventListener('show.bs.modal', function() {
-            if (!formLoaded) {
-                fetch('{{ route('vehicles.create') }}')
-                    .then(response => response.text())
-                    .then(html => {
-                        // Extrair apenas o conteúdo do formulário do HTML retornado
-                        const parser = new DOMParser();
-                        const doc = parser.parseFromString(html, 'text/html');
-                        const form = doc.querySelector('#vehicleForm');
-                        
-                        if (form) {
-                            formContainer.innerHTML = form.outerHTML;
-                            
-                            // Reinicializar os componentes do Bootstrap
-                            const tooltipTriggerList = [].slice.call(formContainer.querySelectorAll('[data-bs-toggle="tooltip"]'));
-                            tooltipTriggerList.map(function (tooltipTriggerEl) {
-                                return new bootstrap.Tooltip(tooltipTriggerEl);
-                            });
-
-                            // Atualizar o action do formulário e adicionar handler de submit
-                            const vehicleForm = formContainer.querySelector('#vehicleForm');
-                            if (vehicleForm) {
-                                vehicleForm.addEventListener('submit', function(e) {
-                                    e.preventDefault();
-                                    
-                                    const formData = new FormData(this);
-                                    fetch('{{ route('vehicles.store') }}', {
-                                        method: 'POST',
-                                        headers: {
-                                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                                        },
-                                        body: formData
-                                    })
-                                    .then(response => response.json())
-                                    .then(data => {
-                                        if (data.success) {
-                                            // Fechar o modal e recarregar a página
-                                            const bsModal = bootstrap.Modal.getInstance(modal);
-                                            bsModal.hide();
-                                            window.location.reload();
-                                        } else {
-                                            // Mostrar erros de validação
-                                            Object.keys(data.errors).forEach(field => {
-                                                const input = vehicleForm.querySelector(`[name="${field}"]`);
-                                                if (input) {
-                                                    input.classList.add('is-invalid');
-                                                    const feedback = input.nextElementSibling;
-                                                    if (feedback && feedback.classList.contains('invalid-feedback')) {
-                                                        feedback.textContent = data.errors[field][0];
-                                                    }
-                                                }
-                                            });
-                                        }
-                                    })
-                                    .catch(error => {
-                                        console.error('Error:', error);
-                                        alert('Ocorreu um erro ao salvar o veículo. Por favor, tente novamente.');
-                                    });
-                                });
-                            }
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        formContainer.innerHTML = '<div class="alert alert-danger">Erro ao carregar o formulário</div>';
-                    });
-                formLoaded = true;
-            }
+        // Inicializar tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
         });
 
-        // Limpar o formulário quando o modal for fechado
-        modal.addEventListener('hidden.bs.modal', function() {
-            formContainer.innerHTML = '';
-            formLoaded = false;
+        // Tratamento de mensagens de feedback
+        @if(session('success'))
+            Swal.fire({
+                icon: 'success',
+                title: 'Sucesso!',
+                text: '{{ session('success') }}',
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000
+            });
+        @endif
+
+        @if(session('error'))
+            Swal.fire({
+                icon: 'error',
+                title: 'Erro!',
+                text: '{{ session('error') }}',
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000
+            });
+        @endif
+
+        // Ordenação de colunas
+        const headers = document.querySelectorAll('.sortable');
+        headers.forEach(header => {
+            header.addEventListener('click', function() {
+                const sortField = this.dataset.sort;
+                const direction = this.dataset.direction;
+                const currentUrl = new URL(window.location.href);
+                currentUrl.searchParams.set('sort', sortField);
+                currentUrl.searchParams.set('direction', direction);
+                window.location.href = currentUrl.toString();
+            });
         });
+
+        // Modal de exclusão
+        const deleteModal = document.getElementById('deleteModal');
+        if (deleteModal) {
+            deleteModal.addEventListener('show.bs.modal', function (event) {
+                const button = event.relatedTarget;
+                const vehicleId = button.getAttribute('data-vehicle-id');
+                const deleteForm = deleteModal.querySelector('#deleteForm');
+                deleteForm.action = `/vehicles/${vehicleId}`;
+            });
+        }
     });
-
-    // Modal de exclusão
-    const deleteModal = document.getElementById('deleteModal');
-    if (deleteModal) {
-        deleteModal.addEventListener('show.bs.modal', function (event) {
-            const button = event.relatedTarget;
-            const vehicleId = button.getAttribute('data-vehicle-id');
-            const deleteForm = deleteModal.querySelector('#deleteForm');
-            deleteForm.action = `/vehicles/${vehicleId}`;
-        });
-    }
 </script>
 @endpush
+
+@endsection

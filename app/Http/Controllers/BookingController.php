@@ -28,12 +28,27 @@ class BookingController extends Controller
     {
         $query = Booking::with(['client', 'vehicle', 'driver']);
 
-        // Apply status filter
+        // Filtro de busca por cliente, veículo
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->whereHas('client', function($clientQuery) use ($search) {
+                    $clientQuery->where('name', 'like', "%{$search}%");
+                })->orWhereHas('vehicle', function($vehicleQuery) use ($search) {
+                    $vehicleQuery->where('plate', 'like', "%{$search}%")
+                                 ->orWhere('model', 'like', "%{$search}%");
+                })->orWhereHas('driver', function($driverQuery) use ($search) {
+                    $driverQuery->where('name', 'like', "%{$search}%");
+                });
+            });
+        }
+
+        // Filtro por status
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
 
-        // Apply date range filter
+        // Filtro por data
         if ($request->filled('date_from')) {
             $query->where('start_date', '>=', Carbon::parse($request->date_from));
         }
@@ -42,18 +57,38 @@ class BookingController extends Controller
             $query->where('end_date', '<=', Carbon::parse($request->date_to));
         }
 
-        // Apply search filter
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->whereHas('client', function($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%");
-            })->orWhereHas('vehicle', function($q) use ($search) {
-                $q->where('plate', 'like', "%{$search}%")
-                  ->orWhere('model', 'like', "%{$search}%");
-            });
-        }
+        // Ordenação
+        $sortField = $request->get('sort', 'start_date');
+        $sortDirection = $request->get('direction', 'desc');
 
-        $bookings = $query->orderBy('start_date', 'desc')->paginate(10);
+        // Validar campos de ordenação
+        $allowedSortFields = ['id', 'start_date', 'end_date', 'status'];
+        $sortField = in_array($sortField, $allowedSortFields) ? $sortField : 'start_date';
+        $sortDirection = in_array(strtolower($sortDirection), ['asc', 'desc']) ? $sortDirection : 'desc';
+
+        $bookings = $query->orderBy($sortField, $sortDirection)
+                          ->paginate(10)
+                          ->withQueryString(); // Preservar parâmetros da query
+
+        // Adicionar informações de status
+        $bookings->each(function($booking) {
+            $booking->status_color = match($booking->status) {
+                'pending' => 'warning',
+                'confirmed' => 'info',
+                'in_progress' => 'primary',
+                'completed' => 'success',
+                'cancelled' => 'danger',
+                default => 'secondary'
+            };
+            $booking->status_text = match($booking->status) {
+                'pending' => 'Pendente',
+                'confirmed' => 'Confirmada',
+                'in_progress' => 'Em Andamento',
+                'completed' => 'Concluída',
+                'cancelled' => 'Cancelada',
+                default => 'Não Definido'
+            };
+        });
 
         return view('bookings.index', compact('bookings'));
     }

@@ -30,17 +30,33 @@ class ClientController extends Controller
             $search = $request->get('search');
             $query->where(function($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%")
-                  ->orWhere('phone', 'like', "%{$search}%")
-                  ->orWhere('address', 'like', "%{$search}%")
-                  ->orWhere('document_type', 'like', "%{$search}%")
-                  ->orWhere('document_number', 'like', "%{$search}%")
-                  ->orWhere('company_name', 'like', "%{$search}%")
-                  ->orWhere('notes', 'like', "%{$search}%");
+                  ->orWhere('document', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%");
             });
         }
 
-        $clients = $query->orderBy('name')->paginate(10);
+        // Filtro por tipo de cliente
+        if ($request->filled('type')) {
+            $query->where('type', $request->get('type'));
+        }
+
+        // Filtro por status
+        if ($request->filled('status')) {
+            $query->where('is_active', $request->get('status'));
+        }
+
+        // Ordenação
+        $sortField = $request->get('sort', 'name');
+        $sortDirection = $request->get('direction', 'asc');
+
+        // Validar campos de ordenação para evitar injeção
+        $allowedSortFields = ['name', 'type', 'document', 'email', 'phone', 'is_active'];
+        $sortField = in_array($sortField, $allowedSortFields) ? $sortField : 'name';
+        $sortDirection = in_array(strtolower($sortDirection), ['asc', 'desc']) ? $sortDirection : 'asc';
+
+        $clients = $query->orderBy($sortField, $sortDirection)
+                        ->paginate(10)
+                        ->withQueryString(); // Preservar parâmetros da query
 
         return view('clients.index', compact('clients'));
     }
