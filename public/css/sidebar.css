@@ -31,7 +31,7 @@
 
 /* Submenu Styles */
 .nav-item .nav-item {
-    margin-left: 0.5rem;
+    margin: 0;
 }
 
 .nav-item .nav-link {
@@ -39,7 +39,7 @@
 }
 
 .nav-item .nav-item .nav-link {
-    padding-left: 2rem;
+    padding: 0.4rem 2rem;
     border-left: 2px solid #dee2e6;
     transition: border-color 0.3s ease;
 }
@@ -52,8 +52,8 @@
 /* Collapsible Submenu */
 .nav-item > ul {
     display: none;
-    margin-top: 0.25rem;
-    margin-bottom: 0.25rem;
+    padding: 0;
+    margin: 0;
 }
 
 .nav-item:hover > ul,
