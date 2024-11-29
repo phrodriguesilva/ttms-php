@@ -10,6 +10,8 @@ use App\Http\Controllers\PartController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\VehicleAvailabilityController;
+use App\Http\Controllers\PriceCalculationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -74,6 +76,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/vehicles', [VehicleController::class, 'index']);
     Route::get('/vehicles/{vehicle}', [VehicleController::class, 'show']);
     Route::get('/vehicles/{vehicle}/bookings', [VehicleController::class, 'bookings']);
+    Route::post('/vehicle-availability', [VehicleAvailabilityController::class, 'checkAvailability']);
 
     // Driver routes
     Route::get('/drivers', [DriverController::class, 'index']);
@@ -93,6 +96,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/parts', [PartController::class, 'index']);
     Route::get('/parts/{part}', [PartController::class, 'show']);
     Route::get('/parts/low-stock', [PartController::class, 'lowStock']);
+
+    // Price calculation route
+    Route::post('/calculate-price', [PriceCalculationController::class, 'calculate']);
 
     // Notification routes
     Route::prefix('notifications')->group(function () {

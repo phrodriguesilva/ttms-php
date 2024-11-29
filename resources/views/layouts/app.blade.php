@@ -29,7 +29,7 @@
             right: 0;
             z-index: 1030;
             height: 60px;
-            background-color: #1a1a1a;
+            background-color: #6c757d;
             padding: 0.5rem 1rem;
         }
         
@@ -46,6 +46,14 @@
         .navbar .nav-link {
             padding: 0.5rem 1rem !important;
             color: rgba(255, 255, 255, 0.85) !important;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .navbar .nav-link i {
+            font-size: 1rem;
+            line-height: 1;
         }
 
         .navbar .nav-link:hover {
@@ -123,30 +131,22 @@
         
         .content-wrapper {
             display: flex;
-            flex: 1;
-            margin-top: 60px;
-            padding: 0 1rem;
+            min-height: calc(100vh - 60px);
         }
         
         .main-content {
             flex: 1;
+            padding: 1.5rem;
             margin-left: 250px;
-            padding: 1rem;
-            width: calc(100vw - 250px);
-            max-width: 100%;
+            margin-top: 60px;
+            transition: margin-left 0.3s ease;
         }
-        
-        .main-content .container-fluid {
-            padding-left: 0;
-            padding-right: 0;
+
+        /* Estilo para páginas sem autenticação */
+        .guest-content .container {
+            margin-top: 80px;
         }
-        
-        .container-fluid {
-            max-width: none !important;
-            padding-left: 0 !important;
-            padding-right: 0 !important;
-        }
-        
+
         @media (max-width: 768px) {
             .sidebar {
                 width: 100%;
@@ -176,12 +176,16 @@
                         @guest
                             @if (Route::has('login'))
                                 <li class="nav-item">
-                                    <a class="nav-link" href="{{ route('login') }}">{{ __('Login') }}</a>
+                                    <a class="nav-link" href="{{ route('login') }}">
+                                        <i class="fas fa-sign-in-alt"></i> {{ __('Login') }}
+                                    </a>
                                 </li>
                             @endif
                             @if (Route::has('register'))
                                 <li class="nav-item">
-                                    <a class="nav-link" href="{{ route('register') }}">{{ __('Register') }}</a>
+                                    <a class="nav-link" href="{{ route('register') }}">
+                                        <i class="fas fa-user-plus"></i> {{ __('Register') }}
+                                    </a>
                                 </li>
                             @endif
                         @else
@@ -208,14 +212,16 @@
             </div>
         </nav>
 
-        <div class="content-wrapper">
+        <div class="content-wrapper @guest guest-content @endguest">
             <!-- Sidebar -->
+            @auth
             <nav class="sidebar">
                 @include('layouts.sidebar')
             </nav>
+            @endauth
 
             <!-- Main Content -->
-            <main class="main-content">
+            <main class="main-content @guest w-100 m-0 @endguest">
                 @yield('content')
             </main>
         </div>

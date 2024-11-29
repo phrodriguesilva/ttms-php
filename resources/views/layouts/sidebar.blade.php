@@ -43,31 +43,31 @@
             </a>
         </li>
 
-        <!-- Frota -->
+        <!-- Veículos -->
         <li class="nav-item">
-            <a class="nav-link {{ request()->routeIs(['vehicles.*', 'drivers.*']) ? 'active' : '' }}" 
-               href="#">
-                <i class="fas fa-truck"></i>
-                <span>Frota</span>
+            <a class="nav-link {{ request()->routeIs('vehicles.*') ? 'active' : '' }}" 
+               href="{{ route('vehicles.index') }}">
+                <i class="fas fa-car"></i>
+                <span>Veículos</span>
             </a>
-            <ul class="nav flex-column ms-3">
-                <!-- Veículos -->
-                <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('vehicles.*') ? 'active' : '' }}" 
-                       href="{{ route('vehicles.index') }}">
-                        <i class="fas fa-car"></i>
-                        <span>Veículos</span>
-                    </a>
-                </li>
-                <!-- Motoristas -->
-                <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('drivers.*') ? 'active' : '' }}" 
-                       href="{{ route('drivers.index') }}">
-                        <i class="fas fa-user"></i>
-                        <span>Motoristas</span>
-                    </a>
-                </li>
-            </ul>
+        </li>
+
+        <!-- Aeroportos -->
+        <li class="nav-item">
+            <a class="nav-link {{ request()->routeIs('airports.*') ? 'active' : '' }}" 
+            href="{{ route('airports.index') }}">
+                <i class="fas fa-plane"></i>
+                <span>Aeroportos</span>
+            </a>
+        </li>
+
+        <!-- Motoristas -->
+        <li class="nav-item">
+            <a class="nav-link {{ request()->routeIs('drivers.*') ? 'active' : '' }}" 
+               href="{{ route('drivers.index') }}">
+                <i class="fas fa-user"></i>
+                <span>Motoristas</span>
+            </a>
         </li>
 
         <!-- Suprimentos -->
@@ -80,26 +80,50 @@
             <ul class="nav flex-column ms-3">
                 <!-- Produtos -->
                 <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('supplies.index') ? 'active' : '' }}" 
+                    <a class="nav-link {{ request()->routeIs('supplies.index') && !request()->has('filter') ? 'active' : '' }}" 
                        href="{{ route('supplies.index') }}">
                         <i class="fas fa-box"></i>
                         <span>Produtos</span>
                     </a>
                 </li>
-                <!-- Entrada de Estoque -->
+                <!-- Alertas de Estoque -->
+                <li class="nav-item">
+                    <a class="nav-link {{ request()->routeIs('supplies.alerts') ? 'active' : '' }}" 
+                       href="{{ route('supplies.alerts') }}">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <span>Alertas de Estoque</span>
+                    </a>
+                </li>
+                <!-- Relatórios -->
+                <li class="nav-item">
+                    <a class="nav-link {{ request()->routeIs('supplies.reports') ? 'active' : '' }}" 
+                       href="{{ route('supplies.reports') }}">
+                        <i class="fas fa-chart-bar"></i>
+                        <span>Relatórios</span>
+                    </a>
+                </li>
+                <!-- Categorias -->
+                <li class="nav-item">
+                    <a class="nav-link {{ request()->routeIs('supplies.categories') ? 'active' : '' }}" 
+                       href="{{ route('supplies.categories') }}">
+                        <i class="fas fa-folder"></i>
+                        <span>Categorias</span>
+                    </a>
+                </li>
+                <!-- Entrada -->
                 <li class="nav-item">
                     <a class="nav-link {{ request()->routeIs('supplies.stock.in') ? 'active' : '' }}" 
                        href="#">
                         <i class="fas fa-arrow-down"></i>
-                        <span>Entrada de Estoque</span>
+                        <span>Entrada</span>
                     </a>
                 </li>
-                <!-- Saída de Estoque -->
+                <!-- Saída -->
                 <li class="nav-item">
                     <a class="nav-link {{ request()->routeIs('supplies.stock.out') ? 'active' : '' }}" 
                        href="#">
                         <i class="fas fa-arrow-up"></i>
-                        <span>Saída de Estoque</span>
+                        <span>Saída</span>
                     </a>
                 </li>
                 <!-- Pedidos -->

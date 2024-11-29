@@ -6,12 +6,21 @@ use App\Models\Booking;
 use App\Models\Client;
 use App\Models\Vehicle;
 use App\Models\Driver;
+use App\Http\Requests\BookingRequest;
+use App\Services\BookingService;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Carbon\Carbon;
 
 class BookingController extends Controller
 {
+    protected $bookingService;
+
+    public function __construct(BookingService $bookingService)
+    {
+        $this->bookingService = $bookingService;
+    }
+
     /**
      * Display a listing of bookings
      */
@@ -20,21 +29,22 @@ class BookingController extends Controller
         $query = Booking::with(['client', 'vehicle', 'driver']);
 
         // Apply status filter
-        if ($request->has('status') && $request->get('status')) {
-            $query->where('status', $request->get('status'));
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
         }
 
         // Apply date range filter
-        if ($request->has('date_from') && $request->get('date_from')) {
-            $query->where('start_date', '>=', Carbon::parse($request->get('date_from')));
+        if ($request->filled('date_from')) {
+            $query->where('start_date', '>=', Carbon::parse($request->date_from));
         }
-        if ($request->has('date_to') && $request->get('date_to')) {
-            $query->where('end_date', '<=', Carbon::parse($request->get('date_to')));
+
+        if ($request->filled('date_to')) {
+            $query->where('end_date', '<=', Carbon::parse($request->date_to));
         }
 
         // Apply search filter
-        if ($request->has('search')) {
-            $search = $request->get('search');
+        if ($request->filled('search')) {
+            $search = $request->search;
             $query->whereHas('client', function($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%");
             })->orWhereHas('vehicle', function($q) use ($search) {
@@ -65,58 +75,82 @@ class BookingController extends Controller
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
+        $validatedData = $request->validate([
             'client_id' => 'required|exists:clients,id',
             'vehicle_id' => 'required|exists:vehicles,id',
             'driver_id' => 'required|exists:drivers,id',
-            'start_date' => 'required|date|after:today',
+            'start_date' => 'required|date',
             'end_date' => 'required|date|after:start_date',
-            'pickup_location' => 'required|string|max:255',
-            'dropoff_location' => 'required|string|max:255',
-            'status' => 'required|string|in:pending,confirmed,in_progress,completed,cancelled',
-            'payment_status' => 'required|string|in:pending,paid,partially_paid,refunded',
-            'total_amount' => 'required|numeric|min:0',
+            'pickup_location' => 'required|string',
+            'dropoff_location' => 'required|string',
+            'service_type' => 'required|string',
+            'payment_method' => 'required|string',
+            'payment_status' => 'required|string',
+            'price_type' => 'required|in:auto,manual',
+            'passengers' => 'required|integer|min:1',
+            // Campos opcionais
+            'distance' => 'nullable|numeric|min:0',
+            'hours' => 'nullable|numeric|min:1',
+            'days' => 'nullable|numeric|min:1',
+            'base_rate' => 'nullable|numeric|min:0',
+            'additional_charges' => 'nullable|numeric|min:0',
+            'discount' => 'nullable|numeric|min:0',
             'notes' => 'nullable|string',
             'special_requirements' => 'nullable|string'
         ]);
 
-        // Convert dates to Carbon instances
-        $validated['start_date'] = Carbon::parse($validated['start_date']);
-        $validated['end_date'] = Carbon::parse($validated['end_date']);
+        // Calcular o valor total
+        $totalAmount = 0;
 
-        // Check if vehicle is available for the selected date range
-        $conflictingBooking = Booking::where('vehicle_id', $validated['vehicle_id'])
-            ->where('status', '!=', 'cancelled')
-            ->where(function($query) use ($validated) {
-                $query->whereBetween('start_date', [$validated['start_date'], $validated['end_date']])
-                    ->orWhereBetween('end_date', [$validated['start_date'], $validated['end_date']]);
-            })->first();
-
-        if ($conflictingBooking) {
-            return back()
-                ->withInput()
-                ->withErrors(['vehicle_id' => 'O veículo selecionado não está disponível neste período.']);
+        if ($request->price_type === 'auto') {
+            // Usar o serviço de cálculo de preço
+            $priceCalculator = new PriceCalculationController();
+            $priceResponse = $priceCalculator->calculate($request);
+            $totalAmount = str_replace(['.', ','], ['', '.'], $priceResponse->getData()->final_price);
+        } else {
+            // Usar valores manuais
+            $totalAmount = ($request->base_rate ?? 0) + ($request->additional_charges ?? 0) - ($request->discount ?? 0);
         }
 
-        // Check if driver is available for the selected date range
-        $conflictingDriver = Booking::where('driver_id', $validated['driver_id'])
-            ->where('status', '!=', 'cancelled')
-            ->where(function($query) use ($validated) {
-                $query->whereBetween('start_date', [$validated['start_date'], $validated['end_date']])
-                    ->orWhereBetween('end_date', [$validated['start_date'], $validated['end_date']]);
-            })->first();
+        // Criar a reserva
+        $booking = Booking::create([
+            'client_id' => $validatedData['client_id'],
+            'vehicle_id' => $validatedData['vehicle_id'],
+            'driver_id' => $validatedData['driver_id'],
+            'start_date' => $validatedData['start_date'],
+            'end_date' => $validatedData['end_date'],
+            'pickup_location' => $validatedData['pickup_location'],
+            'dropoff_location' => $validatedData['dropoff_location'],
+            'service_type' => $validatedData['service_type'],
+            'payment_method' => $validatedData['payment_method'],
+            'payment_status' => $validatedData['payment_status'],
+            'total_amount' => $totalAmount,
+            'status' => 'pending',
+            'notes' => $request->notes,
+            'special_requirements' => $request->special_requirements
+        ]);
 
-        if ($conflictingDriver) {
-            return back()
-                ->withInput()
-                ->withErrors(['driver_id' => 'O motorista selecionado não está disponível neste período.']);
+        // Registrar detalhes do cálculo
+        if ($request->price_type === 'auto') {
+            $booking->priceDetails()->create([
+                'calculation_type' => 'auto',
+                'service_type' => $validatedData['service_type'],
+                'distance' => $request->distance,
+                'hours' => $request->hours,
+                'days' => $request->days,
+                'passengers' => $validatedData['passengers']
+            ]);
+        } else {
+            $booking->priceDetails()->create([
+                'calculation_type' => 'manual',
+                'base_rate' => $request->base_rate,
+                'additional_charges' => $request->additional_charges,
+                'discount' => $request->discount
+            ]);
         }
 
-        Booking::create($validated);
-
-        return redirect()
-            ->route('bookings.index')
-            ->with('success', 'Reserva criada com sucesso.');
+        return redirect()->route('bookings.show', $booking)
+            ->with('success', 'Reserva criada com sucesso!');
     }
 
     /**
@@ -133,9 +167,10 @@ class BookingController extends Controller
      */
     public function edit(Booking $booking): View
     {
+        $booking->load(['client', 'vehicle', 'driver']);
         $clients = Client::orderBy('name')->get();
-        $vehicles = Vehicle::where('status', 'active')->orderBy('model')->get();
-        $drivers = Driver::where('status', 'available')->orderBy('name')->get();
+        $vehicles = Vehicle::orderBy('model')->get();
+        $drivers = Driver::orderBy('name')->get();
 
         return view('bookings.edit', compact('booking', 'clients', 'vehicles', 'drivers'));
     }
@@ -143,72 +178,16 @@ class BookingController extends Controller
     /**
      * Update booking details
      */
-    public function update(Request $request, Booking $booking)
+    public function update(BookingRequest $request, Booking $booking)
     {
-        $validated = $request->validate([
-            'client_id' => 'required|exists:clients,id',
-            'vehicle_id' => 'required|exists:vehicles,id',
-            'driver_id' => 'required|exists:drivers,id',
-            'start_date' => 'required|date',
-            'end_date' => 'required|date|after:start_date',
-            'pickup_location' => 'required|string|max:255',
-            'dropoff_location' => 'required|string|max:255',
-            'status' => 'required|string|in:pending,confirmed,in_progress,completed,cancelled',
-            'payment_status' => 'required|string|in:pending,paid,partially_paid,refunded',
-            'total_amount' => 'required|numeric|min:0',
-            'notes' => 'nullable|string',
-            'special_requirements' => 'nullable|string'
-        ]);
-
-        // Convert dates to Carbon instances
-        $validated['start_date'] = Carbon::parse($validated['start_date']);
-        $validated['end_date'] = Carbon::parse($validated['end_date']);
-
-        // Check for vehicle availability only if vehicle or dates changed
-        if ($booking->vehicle_id != $validated['vehicle_id'] || 
-            $booking->start_date != $validated['start_date'] || 
-            $booking->end_date != $validated['end_date']) {
-            
-            $conflictingBooking = Booking::where('vehicle_id', $validated['vehicle_id'])
-                ->where('id', '!=', $booking->id)
-                ->where('status', '!=', 'cancelled')
-                ->where(function($query) use ($validated) {
-                    $query->whereBetween('start_date', [$validated['start_date'], $validated['end_date']])
-                        ->orWhereBetween('end_date', [$validated['start_date'], $validated['end_date']]);
-                })->first();
-
-            if ($conflictingBooking) {
-                return back()
-                    ->withInput()
-                    ->withErrors(['vehicle_id' => 'O veículo selecionado não está disponível neste período.']);
-            }
+        try {
+            $this->bookingService->update($booking, $request->validated());
+            return redirect()->route('bookings.show', $booking)
+                ->with('success', 'Reserva atualizada com sucesso!');
+        } catch (\Exception $e) {
+            return back()->withInput()
+                ->with('error', 'Erro ao atualizar reserva: ' . $e->getMessage());
         }
-
-        // Check for driver availability only if driver or dates changed
-        if ($booking->driver_id != $validated['driver_id'] || 
-            $booking->start_date != $validated['start_date'] || 
-            $booking->end_date != $validated['end_date']) {
-            
-            $conflictingDriver = Booking::where('driver_id', $validated['driver_id'])
-                ->where('id', '!=', $booking->id)
-                ->where('status', '!=', 'cancelled')
-                ->where(function($query) use ($validated) {
-                    $query->whereBetween('start_date', [$validated['start_date'], $validated['end_date']])
-                        ->orWhereBetween('end_date', [$validated['start_date'], $validated['end_date']]);
-                })->first();
-
-            if ($conflictingDriver) {
-                return back()
-                    ->withInput()
-                    ->withErrors(['driver_id' => 'O motorista selecionado não está disponível neste período.']);
-            }
-        }
-
-        $booking->update($validated);
-
-        return redirect()
-            ->route('bookings.show', $booking)
-            ->with('success', 'Reserva atualizada com sucesso.');
     }
 
     /**
@@ -216,10 +195,13 @@ class BookingController extends Controller
      */
     public function destroy(Booking $booking)
     {
-        $booking->update(['status' => 'cancelled']);
-        
-        return redirect()
-            ->route('bookings.index')
-            ->with('success', 'Reserva cancelada com sucesso.');
+        try {
+            $booking->update(['status' => 'cancelled']);
+            $this->bookingService->update($booking, ['status' => 'cancelled']);
+            return redirect()->route('bookings.index')
+                ->with('success', 'Reserva cancelada com sucesso!');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Erro ao cancelar reserva: ' . $e->getMessage());
+        }
     }
 }

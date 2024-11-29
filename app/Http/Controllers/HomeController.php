@@ -32,16 +32,23 @@ class HomeController extends Controller
         try {
             // Estatísticas gerais
             $totalBookings = Booking::count();
+            $pendingBookings = Booking::where('status', 'pending')->count();
             $activeVehicles = Vehicle::where('status', 'active')->count();
+            $totalVehicles = Vehicle::count();
             $availableDrivers = Driver::where('status', 'available')->count();
+            $totalDrivers = Driver::count();
 
-            // Reservas recentes
-            $recentBookings = Booking::with(['client'])
-                ->orderBy('created_at', 'desc')
-                ->take(5)
-                ->get();
+            // Faturamento mensal
+            $startOfMonth = Carbon::now()->startOfMonth();
+            $endOfMonth = Carbon::now()->endOfMonth();
+            $monthlyRevenue = Booking::whereBetween('start_date', [$startOfMonth, $endOfMonth])
+                ->where('status', 'completed')
+                ->sum('total_amount');
+            $completedBookingsThisMonth = Booking::whereBetween('start_date', [$startOfMonth, $endOfMonth])
+                ->where('status', 'completed')
+                ->count();
 
-            // Dados para os gráficos
+            // Reservas por status
             $bookingsByStatus = Booking::select('status', DB::raw('count(*) as count'))
                 ->groupBy('status')
                 ->get()
@@ -52,23 +59,25 @@ class HomeController extends Controller
                     ];
                 });
 
-            $vehiclesByStatus = Vehicle::select('status', DB::raw('count(*) as count'))
-                ->groupBy('status')
-                ->get()
-                ->map(function ($item) {
-                    return [
-                        'status_text' => ucfirst($item->status),
-                        'count' => $item->count
-                    ];
-                });
+            // Próximas reservas
+            $upcomingBookings = Booking::with(['client', 'vehicle'])
+                ->where('start_date', '>=', Carbon::now())
+                ->where('status', 'confirmed')
+                ->orderBy('start_date')
+                ->limit(5)
+                ->get();
 
             return view('dashboard.index', compact(
                 'totalBookings',
+                'pendingBookings',
                 'activeVehicles',
+                'totalVehicles',
                 'availableDrivers',
-                'recentBookings',
+                'totalDrivers',
+                'monthlyRevenue',
+                'completedBookingsThisMonth',
                 'bookingsByStatus',
-                'vehiclesByStatus'
+                'upcomingBookings'
             ));
         } catch (\Exception $e) {
             return back()->with('error', 'Erro ao carregar o dashboard: ' . $e->getMessage());

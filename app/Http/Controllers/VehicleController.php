@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Vehicle;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\Validator;
 
 class VehicleController extends Controller
 {
@@ -60,25 +61,69 @@ class VehicleController extends Controller
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'make' => 'required|string|max:255',
+        $validator = Validator::make($request->all(), [
+            'plate' => 'required|string|regex:/^[A-Z]{3}[0-9][A-Z0-9][0-9]{2}$/',
+            'brand' => 'required|string|max:255',
             'model' => 'required|string|max:255',
-            'year' => 'required|integer|min:1900|max:' . (date('Y') + 1),
-            'license_plate' => 'required|string|max:20|unique:vehicles',
-            'vin' => 'required|string|max:17|unique:vehicles',
-            'status' => 'required|string|in:available,maintenance,booked,out_of_service',
-            'mileage' => 'required|numeric|min:0',
-            'fuel_type' => 'required|string|max:50',
-            'last_maintenance' => 'nullable|date',
-            'next_maintenance' => 'nullable|date|after:last_maintenance',
-            'notes' => 'nullable|string'
+            'year' => 'required|integer|min:1900|max:'.(date('Y') + 1),
+            'chassis' => 'required|string|size:17|regex:/^[A-HJ-NPR-Z0-9]+$/',
+            'renavam' => 'required|string|size:11|regex:/^[0-9]+$/',
+            'observations' => 'nullable|string'
+        ], [
+            'plate.required' => 'A placa é obrigatória',
+            'plate.regex' => 'A placa deve estar no formato ABC1234 ou ABC1D23',
+            'brand.required' => 'A marca é obrigatória',
+            'model.required' => 'O modelo é obrigatório',
+            'year.required' => 'O ano é obrigatório',
+            'year.integer' => 'O ano deve ser um número inteiro',
+            'year.min' => 'O ano deve ser maior que 1900',
+            'year.max' => 'O ano não pode ser maior que '.(date('Y') + 1),
+            'chassis.required' => 'O chassi é obrigatório',
+            'chassis.size' => 'O chassi deve ter 17 caracteres',
+            'chassis.regex' => 'O chassi deve conter apenas letras (exceto I, O e Q) e números',
+            'renavam.required' => 'O RENAVAM é obrigatório',
+            'renavam.size' => 'O RENAVAM deve ter 11 dígitos',
+            'renavam.regex' => 'O RENAVAM deve conter apenas números'
         ]);
 
-        Vehicle::create($validated);
+        if ($validator->fails()) {
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+            
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput();
+        }
 
-        return redirect()
-            ->route('vehicles.index')
-            ->with('success', 'Veículo criado com sucesso.');
+        try {
+            $vehicle = Vehicle::create($request->all());
+
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Veículo cadastrado com sucesso!',
+                    'vehicle' => $vehicle
+                ]);
+            }
+
+            return redirect()->route('vehicles.index')
+                ->with('success', 'Veículo cadastrado com sucesso!');
+        } catch (\Exception $e) {
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Erro ao cadastrar veículo: ' . $e->getMessage()
+                ], 500);
+            }
+
+            return redirect()->back()
+                ->with('error', 'Erro ao cadastrar veículo: ' . $e->getMessage())
+                ->withInput();
+        }
     }
 
     /**

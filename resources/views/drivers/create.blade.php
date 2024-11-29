@@ -106,6 +106,8 @@
                             </div>
                         </div>
 
+                        
+
                         <!-- Status e Observações -->
                         <div class="col-12">
                             <h4 class="mb-3">Status e Observações</h4>

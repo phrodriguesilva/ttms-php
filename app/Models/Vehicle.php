@@ -12,22 +12,19 @@ class Vehicle extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'make',
+        'plate',
+        'brand',
         'model',
         'year',
-        'license_plate',
-        'vin',
-        'status',
-        'mileage',
-        'fuel_type',
-        'last_maintenance',
-        'next_maintenance',
-        'notes'
+        'chassis',
+        'renavam',
+        'observations'
     ];
 
     protected $casts = [
         'last_maintenance' => 'datetime',
-        'next_maintenance' => 'datetime'
+        'next_maintenance' => 'datetime',
+        'insurance_expiry' => 'datetime'
     ];
 
     public function bookings(): HasMany

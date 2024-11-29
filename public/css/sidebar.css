@@ -3,9 +3,10 @@
     width: 100%;
 }
 
+/* Estilo base para todos os links de navegação */
 .nav-link {
     color: #6c757d;
-    padding: 0.5rem 1rem;
+    padding: 0.4rem 1rem;
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -14,17 +15,18 @@
 }
 
 .nav-link:hover {
-    color: #0d6efd;
-    background-color: rgba(13, 110, 253, 0.1);
+    color: #212529;
+    background-color: rgba(108, 117, 125, 0.1);
 }
 
 .nav-link.active {
-    color: #0d6efd;
-    background-color: rgba(13, 110, 253, 0.1);
+    color: #212529;
     font-weight: 500;
 }
 
+/* Estilo específico para ícones em todos os links */
 .nav-link i {
+    font-size: 0.9rem;
     width: 1.25rem;
     text-align: center;
 }
@@ -38,6 +40,7 @@
     font-size: 0.9rem;
 }
 
+/* Estilo específico para links do submenu */
 .nav-item .nav-item .nav-link {
     padding: 0.4rem 2rem;
     border-left: 2px solid #dee2e6;
@@ -46,7 +49,11 @@
 
 .nav-item .nav-item .nav-link:hover,
 .nav-item .nav-item .nav-link.active {
-    border-left-color: #0d6efd;
+    border-left-color: #6c757d;
+}
+
+.nav-item .nav-item .nav-link.active {
+    background-color: rgba(108, 117, 125, 0.1);
 }
 
 /* Collapsible Submenu */
@@ -79,8 +86,8 @@
 
 /* Scrollbar */
 .sidebar {
-    max-height: 100vh;
-    overflow-y: auto;
+    height: 100%;
+    width: 100%;
     scrollbar-width: thin;
     scrollbar-color: #6c757d transparent;
 }

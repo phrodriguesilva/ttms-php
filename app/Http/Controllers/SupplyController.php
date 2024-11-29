@@ -3,12 +3,20 @@
 namespace App\Http\Controllers;
 
 use App\Models\Supply;
+use App\Services\SupplyService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class SupplyController extends Controller
 {
+    protected $supplyService;
+
+    public function __construct(SupplyService $supplyService)
+    {
+        $this->supplyService = $supplyService;
+    }
+
     /**
      * Display a listing of supplies
      */
@@ -272,5 +280,33 @@ class SupplyController extends Controller
         return response()->json([
             'sku' => Supply::generateSKU()
         ]);
+    }
+
+    /**
+     * Display low stock alerts
+     */
+    public function alerts(): View
+    {
+        $alerts = $this->supplyService->checkLowStock();
+        return view('supplies.alerts', compact('alerts'));
+    }
+
+    /**
+     * Display consumption reports
+     */
+    public function reports(Request $request): View
+    {
+        $period = $request->get('period', 'month');
+        $report = $this->supplyService->generateConsumptionReport($period);
+        return view('supplies.reports', compact('report'));
+    }
+
+    /**
+     * Display category management
+     */
+    public function categories(): View
+    {
+        $statistics = $this->supplyService->getCategoryStatistics();
+        return view('supplies.categories', compact('statistics'));
     }
 }

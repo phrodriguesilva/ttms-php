@@ -115,6 +115,78 @@
                             </div>
                         </div>
 
+                        <!-- Pricing Details -->
+<div class="col-md-6">
+    <div class="card h-100">
+        <div class="card-header">
+            <h5 class="card-title">Detalhes do Preço</h5>
+        </div>
+        <div class="card-body">
+            @if($booking->priceDetails)
+                @if($booking->priceDetails->calculation_type === 'auto')
+                    <table class="table table-borderless">
+                        <tr>
+                            <th style="width: 150px;">Tipo de Cálculo:</th>
+                            <td><span class="badge bg-info">Automático</span></td>
+                        </tr>
+                        <tr>
+                            <th>Tipo de Serviço:</th>
+                            <td>{{ $booking->priceDetails->service_type }}</td>
+                        </tr>
+                        @if($booking->priceDetails->distance)
+                        <tr>
+                            <th>Distância:</th>
+                            <td>{{ $booking->priceDetails->distance }} km</td>
+                        </tr>
+                        @endif
+                        @if($booking->priceDetails->hours)
+                        <tr>
+                            <th>Horas:</th>
+                            <td>{{ $booking->priceDetails->hours }}</td>
+                        </tr>
+                        @endif
+                        @if($booking->priceDetails->days)
+                        <tr>
+                            <th>Dias:</th>
+                            <td>{{ $booking->priceDetails->days }}</td>
+                        </tr>
+                        @endif
+                        <tr>
+                            <th>Passageiros:</th>
+                            <td>{{ $booking->priceDetails->passengers }}</td>
+                        </tr>
+                    </table>
+                @else
+                    <table class="table table-borderless">
+                        <tr>
+                            <th style="width: 150px;">Tipo de Cálculo:</th>
+                            <td><span class="badge bg-warning text-dark">Manual</span></td>
+                        </tr>
+                        <tr>
+                            <th>Valor Base:</th>
+                            <td>R$ {{ number_format($booking->priceDetails->base_rate, 2, ',', '.') }}</td>
+                        </tr>
+                        @if($booking->priceDetails->additional_charges > 0)
+                        <tr>
+                            <th>Taxas Adicionais:</th>
+                            <td>R$ {{ number_format($booking->priceDetails->additional_charges, 2, ',', '.') }}</td>
+                        </tr>
+                        @endif
+                        @if($booking->priceDetails->discount > 0)
+                        <tr>
+                            <th>Desconto:</th>
+                            <td>R$ {{ number_format($booking->priceDetails->discount, 2, ',', '.') }}</td>
+                        </tr>
+                        @endif
+                    </table>
+                @endif
+            @else
+                <p class="text-muted">Detalhes do preço não disponíveis</p>
+            @endif
+        </div>
+    </div>
+</div>
+
                         <!-- Location Information -->
                         <div class="col-md-6">
                             <div class="card h-100">
@@ -157,32 +229,11 @@
                             </div>
                         </div>
 
-                        <!-- Timeline -->
+                        <!-- Nova Timeline de Status -->
                         <div class="col-md-12 mt-4">
-                            <div class="card">
-                                <div class="card-header">
-                                    <h5 class="card-title">Linha do Tempo</h5>
-                                </div>
+                            <div class="card mb-4">
                                 <div class="card-body">
-                                    <div class="timeline">
-                                        <div class="timeline-item">
-                                            <div class="timeline-marker bg-success"></div>
-                                            <div class="timeline-content">
-                                                <h6 class="timeline-title">Reserva Criada</h6>
-                                                <p class="timeline-text">{{ $booking->created_at->format('d/m/Y H:i') }}</p>
-                                            </div>
-                                        </div>
-                                        @if($booking->updated_at != $booking->created_at)
-                                            <div class="timeline-item">
-                                                <div class="timeline-marker bg-info"></div>
-                                                <div class="timeline-content">
-                                                    <h6 class="timeline-title">Última Atualização</h6>
-                                                    <p class="timeline-text">{{ $booking->updated_at->format('d/m/Y H:i') }}</p>
-                                                </div>
-                                            </div>
-                                        @endif
-                                        <!-- Add more timeline items based on booking history -->
-                                    </div>
+                                    <x-booking-timeline :booking="$booking" />
                                 </div>
                             </div>
                         </div>
