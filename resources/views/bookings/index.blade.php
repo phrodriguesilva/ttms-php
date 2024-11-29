@@ -186,11 +186,11 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="8" class="text-center py-4">
-                                            <div class="d-flex flex-column align-items-center">
-                                                <i class="fas fa-calendar-alt text-muted mb-3" style="font-size: 3rem;"></i>
-                                                <h5 class="text-muted">Nenhuma reserva encontrada</h5>
-                                                <p class="text-muted">Adicione uma nova reserva para começar</p>
+                                        <td colspan="8" class="text-center py-5">
+                                            <div class="d-flex flex-column align-items-center justify-content-center">
+                                                <i class="fas fa-calendar-times fa-4x text-muted mb-3"></i>
+                                                <h5 class="text-muted mb-2">Nenhuma reserva encontrada</h5>
+                                                <p class="text-muted mb-3">Não existem reservas que correspondam aos filtros selecionados.</p>
                                                 <a href="{{ route('bookings.create') }}" class="btn btn-primary mt-2">
                                                     <i class="fas fa-plus me-2"></i>Nova Reserva
                                                 </a>

@@ -176,12 +176,12 @@
                                 @empty
                                     <tr>
                                         <td colspan="7" class="text-center py-5">
-                                            <div class="d-flex flex-column align-items-center">
-                                                <i class="fas fa-user-slash fa-4x text-muted mb-3 empty-list-icon"></i>
-                                                <h4 class="text-muted mb-2 empty-list-title">Nenhum motorista encontrado</h4>
-                                                <p class="text-muted mb-3 empty-list-description">Não existem motoristas que correspondam aos filtros selecionados.</p>
-                                                <a href="{{ route('drivers.create') }}" class="btn btn-primary">
-                                                    <i class="fas fa-plus me-2"></i>Adicionar Novo Motorista
+                                            <div class="d-flex flex-column align-items-center justify-content-center">
+                                                <i class="fas fa-user-slash fa-4x text-muted mb-3"></i>
+                                                <h5 class="text-muted mb-2">Nenhum motorista encontrado</h5>
+                                                <p class="text-muted mb-3">Não existem motoristas que correspondam aos filtros selecionados.</p>
+                                                <a href="{{ route('drivers.create') }}" class="btn btn-primary mt-2">
+                                                    <i class="fas fa-plus me-2"></i>Novo Motorista
                                                 </a>
                                             </div>
                                         </td>

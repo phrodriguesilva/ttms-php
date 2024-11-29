@@ -220,13 +220,13 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="7" class="text-center py-4">
-                                            <div class="d-flex flex-column align-items-center">
-                                                <i class="fas fa-users text-muted mb-3" style="font-size: 3rem;"></i>
-                                                <h5 class="text-muted">Nenhum cliente encontrado</h5>
-                                                <p class="text-muted">Adicione um novo cliente para começar</p>
+                                        <td colspan="7" class="text-center py-5">
+                                            <div class="d-flex flex-column align-items-center justify-content-center">
+                                                <i class="fas fa-user-slash fa-4x text-muted mb-3"></i>
+                                                <h5 class="text-muted mb-2">Nenhum cliente encontrado</h5>
+                                                <p class="text-muted mb-3">Não existem clientes que correspondam aos filtros selecionados.</p>
                                                 <a href="{{ route('clients.create') }}" class="btn btn-primary mt-2">
-                                                    <i class="fas fa-plus me-2"></i>Novo Cliente
+                                                    <i class="fas fa-plus me-2"></i>Adicionar Cliente
                                                 </a>
                                             </div>
                                         </td>

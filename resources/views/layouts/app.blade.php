@@ -10,6 +10,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="{{ asset('css/sidebar.css') }}" rel="stylesheet">
     @vite(['resources/sass/app.scss', 'resources/js/app.js'])
+    @stack('styles')
     <style>
         body {
             min-height: 100vh;
@@ -130,10 +131,27 @@
         }
         
         .content-wrapper {
-            display: flex;
+            margin-top: 60px;
+            margin-left: 250px;
+            padding: 1rem;
             min-height: calc(100vh - 60px);
+            background-color: #f8f9fa;
         }
-        
+
+        @media (max-width: 991.98px) {
+            .sidebar {
+                width: 100%;
+                top: 60px;
+                height: auto;
+                z-index: 1000;
+                display: none;
+            }
+
+            .content-wrapper {
+                margin-left: 0;
+            }
+        }
+
         .main-content {
             flex: 1;
             padding: 1.5rem;
@@ -162,72 +180,93 @@
 <body>
     <div id="app">
         <!-- Navbar -->
-        <nav class="navbar navbar-expand-md navbar-dark">
+        <nav class="navbar navbar-expand-md navbar-dark fixed-top">
             <div class="container-fluid">
-                <a class="navbar-brand" href="{{ url('/') }}">
-                    {{ config('app.name', 'Laravel') }}
-                </a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent">
+                <!-- Mobile Menu Toggle (Unified) -->
+                <button id="mobile-menu-toggle" class="navbar-toggler me-2" type="button" 
+                        aria-label="Toggle navigation and sidebar" 
+                        aria-expanded="false"
+                        aria-controls="main-sidebar main-navbar-content">
                     <span class="navbar-toggler-icon"></span>
                 </button>
 
-                <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                    <ul class="navbar-nav ms-auto">
-                        @guest
+                <a class="navbar-brand" href="{{ url('/') }}">
+                    {{ config('app.name', 'Laravel') }}
+                </a>
+
+                <!-- User Authentication Menu -->
+                <div class="ms-auto d-flex align-items-center">
+                    @guest
+                        <div class="nav-auth-links d-none d-md-flex">
                             @if (Route::has('login'))
-                                <li class="nav-item">
-                                    <a class="nav-link" href="{{ route('login') }}">
-                                        <i class="fas fa-sign-in-alt"></i> {{ __('Login') }}
-                                    </a>
-                                </li>
+                                <a class="nav-link" href="{{ route('login') }}">
+                                    <i class="fas fa-sign-in-alt me-1"></i> {{ __('Login') }}
+                                </a>
                             @endif
                             @if (Route::has('register'))
-                                <li class="nav-item">
-                                    <a class="nav-link" href="{{ route('register') }}">
-                                        <i class="fas fa-user-plus"></i> {{ __('Register') }}
-                                    </a>
-                                </li>
-                            @endif
-                        @else
-                            <li class="nav-item dropdown">
-                                <a id="navbarDropdown" class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
-                                    {{ Auth::user()->name }}
+                                <a class="nav-link" href="{{ route('register') }}">
+                                    <i class="fas fa-user-plus me-1"></i> {{ __('Register') }}
                                 </a>
-                                <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                                    <a class="dropdown-item" href="{{ route('profile.show') }}">
-                                        {{ __('Perfil') }}
-                                    </a>
-                                    <a class="dropdown-item" href="{{ route('logout') }}"
-                                       onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                                        {{ __('Logout') }}
-                                    </a>
-                                    <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
-                                        @csrf
-                                    </form>
-                                </div>
-                            </li>
-                        @endguest
-                    </ul>
+                            @endif
+                        </div>
+                    @else
+                        <div class="dropdown">
+                            <a id="navbarDropdown" class="nav-link dropdown-toggle" href="#" role="button" 
+                               data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <i class="fas fa-user me-1"></i> {{ Auth::user()->name }}
+                            </a>
+
+                            <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                                <a class="dropdown-item" href="{{ route('logout') }}"
+                                   onclick="event.preventDefault();
+                                             document.getElementById('logout-form').submit();">
+                                    <i class="fas fa-sign-out-alt me-1"></i> {{ __('Logout') }}
+                                </a>
+
+                                <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
+                                    @csrf
+                                </form>
+                            </div>
+                        </div>
+                    @endguest
                 </div>
             </div>
         </nav>
 
+        <!-- Overlay for mobile interactions -->
+        <div id="mobile-overlay" class="mobile-overlay"></div>
+
         <div class="content-wrapper @guest guest-content @endguest">
-            <!-- Sidebar -->
             @auth
             <nav class="sidebar">
                 @include('layouts.sidebar')
             </nav>
             @endauth
-
-            <!-- Main Content -->
-            <main class="main-content @guest w-100 m-0 @endguest">
-                @yield('content')
-            </main>
+            @yield('content')
         </div>
+
+        <!-- Modal de Confirmação -->
+        <div class="modal fade" id="confirmModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Confirmação</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p id="confirmModalMessage"></p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="button" class="btn btn-primary" id="confirmModalAction">Confirmar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @stack('scripts')
     </div>
 
-    @yield('scripts')
     <script src="{{ asset('js/sidebar.js') }}"></script>
 </body>
 </html>

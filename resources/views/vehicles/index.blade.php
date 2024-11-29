@@ -213,13 +213,13 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="6" class="text-center py-4">
-                                            <div class="d-flex flex-column align-items-center">
-                                                <i class="fas fa-car text-muted mb-3" style="font-size: 3rem;"></i>
-                                                <h5 class="text-muted">Nenhum veículo encontrado</h5>
-                                                <p class="text-muted">Adicione um novo veículo para começar</p>
+                                        <td colspan="6" class="text-center py-5">
+                                            <div class="d-flex flex-column align-items-center justify-content-center">
+                                                <i class="fas fa-car-alt fa-4x text-muted mb-3" style="font-size: 4rem; opacity: 1;"></i>
+                                                <h5 class="text-muted mb-2">Nenhum veículo encontrado</h5>
+                                                <p class="text-muted mb-3">Não existem veículos que correspondam aos filtros selecionados.</p>
                                                 <a href="{{ route('vehicles.create') }}" class="btn btn-primary mt-2">
-                                                    <i class="fas fa-plus me-2"></i>Novo Veículo
+                                                    <i class="fas fa-plus me-2"></i>Adicionar Veículo
                                                 </a>
                                             </div>
                                         </td>
