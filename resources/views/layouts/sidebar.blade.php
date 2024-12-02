@@ -146,8 +146,8 @@
                 </a>
                 <div id="settings-menu" class="nav-group-items {{ !request()->routeIs('settings*') ? 'collapse' : '' }}">
                     <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('settings.general') ? 'active' : '' }}" 
-                           href="#">
+                        <a class="nav-link {{ request()->routeIs('settings.index') ? 'active' : '' }}" 
+                           href="{{ route('settings.index') }}">
                             <i class="fas fa-sliders-h me-2"></i>
                             <span class="nav-link-text">Geral</span>
                         </a>
@@ -179,12 +179,13 @@
     </div>
 
     <!-- User Info Footer -->
-    <div class="sidebar-footer border-top p-3 text-center">
+    <div class="sidebar-footer">
         <a href="{{ route('logout') }}" 
            onclick="event.preventDefault(); document.getElementById('logout-form').submit();"
-           class="btn btn-danger btn-block" 
+           class="btn btn-danger" 
            title="Sair">
-            <i class="fas fa-sign-out-alt me-2"></i> Sair
+            <i class="fas fa-sign-out-alt"></i>
+            <span>Sair do Sistema</span>
         </a>
         <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
             @csrf

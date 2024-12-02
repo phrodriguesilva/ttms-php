@@ -9,6 +9,7 @@ use App\Http\Controllers\DriverController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\SupplyController;
 use App\Http\Controllers\AirportController;
+use App\Http\Controllers\SettingController;
 
 Route::get('/', function () {
     if (auth()->check()) {
@@ -55,6 +56,9 @@ Route::middleware(['auth'])->group(function () {
 
     // Airports routes
     Route::resource('airports', AirportController::class);
+
+    // Rotas de Configurações
+    Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
 
     // Rota de teste para email
     Route::get('/test-email', function () {

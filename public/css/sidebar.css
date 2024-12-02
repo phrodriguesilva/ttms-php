@@ -5,7 +5,7 @@
 
 /* Estilo base para todos os links de navegação */
 .nav-link {
-    color: #6c757d;
+    color: #6c757d !important;
     padding: 0.4rem 1rem;
     display: flex;
     align-items: center;
@@ -15,13 +15,34 @@
 }
 
 .nav-link:hover {
-    color: #212529;
+    color: #212529 !important;
     background-color: rgba(108, 117, 125, 0.1);
 }
 
 .nav-link.active {
-    color: #212529;
+    color: #212529 !important;
     font-weight: 500;
+    background-color: rgba(108, 117, 125, 0.1);
+}
+
+/* Tema escuro */
+.sidebar-dark {
+    background: #2c3e50;
+}
+
+.sidebar-dark .nav-link {
+    color: rgba(255, 255, 255, 0.7) !important;
+}
+
+.sidebar-dark .nav-link:hover {
+    color: #fff !important;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-dark .nav-link.active {
+    color: #fff !important;
+    font-weight: 500;
+    background-color: rgba(255, 255, 255, 0.1);
 }
 
 /* Estilo específico para ícones em todos os links */
@@ -40,20 +61,21 @@
     font-size: 0.9rem;
 }
 
+/* Estilo para o container do submenu */
+.sidebar-dark .nav-group-items {
+    background-color: #243442; /* Fundo um pouco mais escuro que #2c3e50 */
+}
+
 /* Estilo específico para links do submenu */
 .nav-item .nav-item .nav-link {
     padding: 0.4rem 2rem;
-    border-left: 2px solid #dee2e6;
-    transition: border-color 0.3s ease;
+    border-left: 2px solid rgba(255, 255, 255, 0.1);
 }
 
-.nav-item .nav-item .nav-link:hover,
-.nav-item .nav-item .nav-link.active {
-    border-left-color: #6c757d;
-}
-
-.nav-item .nav-item .nav-link.active {
-    background-color: rgba(108, 117, 125, 0.1);
+.sidebar-dark .nav-item .nav-item .nav-link:hover,
+.sidebar-dark .nav-item .nav-item .nav-link.active {
+    border-left-color: #fff;
+    background-color: rgba(0, 0, 0, 0.2); /* Background mais escuro no hover/active */
 }
 
 /* Collapsible Submenu */
@@ -84,12 +106,67 @@
     }
 }
 
+/* Sidebar Base */
+.sidebar {
+    position: fixed;
+    top: 60px; /* Altura da navbar */
+    left: 0;
+    bottom: 0;
+    width: 250px;
+    background: #2c3e50;
+    border-right: 1px solid #dee2e6;
+    z-index: 1020;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Conteúdo principal da sidebar */
+.sidebar-content {
+    flex: 1;
+    overflow-y: auto;
+    padding-bottom: 60px; /* Espaço para o footer */
+}
+
+/* Footer da Sidebar */
+.sidebar-footer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #243442;
+    padding: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-footer .btn-danger {
+    background-color: #e74c3c;
+    border: none;
+    width: 100%;
+    padding: 0.5rem 1rem;
+    transition: all 0.3s ease;
+}
+
+.sidebar-footer .btn-danger:hover {
+    background-color: #c0392b;
+}
+
+.sidebar-footer .btn-danger i {
+    margin-right: 0.5rem;
+}
+
+/* Content Wrapper */
+.content-wrapper {
+    margin-left: 250px; /* Largura da sidebar */
+    margin-top: 60px; /* Altura da navbar */
+    padding: 20px;
+    min-height: calc(100vh - 60px);
+    transition: margin-left 0.3s ease;
+}
+
 /* Scrollbar */
 .sidebar {
-    height: 100%;
-    width: 100%;
     scrollbar-width: thin;
-    scrollbar-color: #6c757d transparent;
+    scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
 }
 
 .sidebar::-webkit-scrollbar {
@@ -101,11 +178,11 @@
 }
 
 .sidebar::-webkit-scrollbar-thumb {
-    background-color: #6c757d;
+    background-color: rgba(255, 255, 255, 0.3);
     border-radius: 3px;
 }
 
-/* Responsive */
+/* Mobile Responsive */
 @media (max-width: 768px) {
     .nav-link span {
         display: none;
@@ -122,4 +199,34 @@
     .nav-item .nav-item .nav-item .nav-link {
         padding-left: 2rem;
     }
+    
+    .sidebar {
+        transform: translateX(-100%);
+    }
+    
+    .sidebar.show {
+        transform: translateX(0);
+    }
+    
+    .content-wrapper {
+        margin-left: 0;
+    }
+}
+
+/* Collapse Indicator */
+.collapse-indicator {
+    transition: transform 0.3s ease;
+}
+
+[aria-expanded="true"] .collapse-indicator {
+    transform: rotate(180deg);
+}
+
+/* Footer */
+.sidebar-dark .sidebar-footer a {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.sidebar-dark .sidebar-footer a:hover {
+    color: #fff;
 }
