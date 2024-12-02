@@ -135,45 +135,46 @@
 
             <!-- Configurações -->
             <div class="nav-group" data-group="settings">
-                <a class="nav-link nav-group-toggle {{ request()->routeIs('settings*') ? 'active' : '' }}" 
-                   href="#settings-menu" 
-                   data-bs-toggle="collapse" 
-                   aria-expanded="{{ request()->routeIs('settings*') ? 'true' : 'false' }}"
-                   aria-controls="settings-menu">
+                <a class="nav-link {{ request()->routeIs('settings*') ? 'active' : '' }}" 
+                   href="{{ route('settings.index') }}">
                     <i class="nav-icon fas fa-cog me-2"></i>
                     <span class="nav-link-text fw-bold">Configurações</span>
+                </a>
+            </div>
+
+            <!-- Empresa -->
+            <div class="nav-group" data-group="company">
+                <a class="nav-link nav-group-toggle {{ request()->routeIs('company*') ? 'active' : '' }}" 
+                   href="#company-menu" 
+                   data-bs-toggle="collapse" 
+                   aria-expanded="{{ request()->routeIs('company*') ? 'true' : 'false' }}"
+                   aria-controls="company-menu">
+                    <i class="nav-icon fas fa-building me-2"></i>
+                    <span class="nav-link-text fw-bold">Empresa</span>
                     <i class="fas fa-chevron-down ms-auto collapse-indicator"></i>
                 </a>
-                <div id="settings-menu" class="nav-group-items {{ !request()->routeIs('settings*') ? 'collapse' : '' }}">
-                    <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('settings.index') ? 'active' : '' }}" 
-                           href="{{ route('settings.index') }}">
-                            <i class="fas fa-sliders-h me-2"></i>
-                            <span class="nav-link-text">Geral</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('settings.users.*') ? 'active' : '' }}" 
-                           href="#">
-                            <i class="fas fa-users-cog me-2"></i>
-                            <span class="nav-link-text">Usuários</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('settings.company') ? 'active' : '' }}" 
-                           href="#">
-                            <i class="fas fa-building me-2"></i>
-                            <span class="nav-link-text">Empresa</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('settings.customization') ? 'active' : '' }}" 
-                           href="#">
-                            <i class="fas fa-paint-brush me-2"></i>
-                            <span class="nav-link-text">Personalização</span>
-                        </a>
-                    </li>
+                <div id="company-menu" 
+                     class="nav-group-items collapse {{ request()->routeIs('company*') ? 'show' : '' }}"
+                     aria-labelledby="company-menu-toggle">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link {{ request()->routeIs('company.users*') ? 'active' : '' }}" 
+                               href="#">
+                                <i class="nav-icon fas fa-users-cog me-2"></i>
+                                <span class="nav-link-text">Usuários</span>
+                            </a>
+                        </li>
+                    </ul>
                 </div>
+            </div>
+
+            <!-- Personalização -->
+            <div class="nav-group">
+                <a class="nav-link {{ request()->routeIs('customization*') ? 'active' : '' }}" 
+                   href="#">
+                    <i class="nav-icon fas fa-paint-brush me-2"></i>
+                    <span class="nav-link-text fw-bold">Personalização</span>
+                </a>
             </div>
         </nav>
     </div>
