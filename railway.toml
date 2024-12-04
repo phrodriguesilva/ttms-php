@@ -1,0 +1,8 @@
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "docker/php/Dockerfile.prod"
+
+[deploy]
+startCommand = "php artisan migrate --force && php artisan config:cache && php-fpm"
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 10
