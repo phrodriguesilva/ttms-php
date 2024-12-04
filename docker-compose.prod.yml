@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  nginx:
+    container_name: ttms-nginx-prod
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./docker/nginx/ssl:/etc/nginx/ssl
+    depends_on:
+      - app
+
+  app:
+    container_name: ttms-app-prod
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile.prod
+    environment:
+      APP_ENV: production
+      APP_DEBUG: "false"
+      DB_HOST: mysql
+      DB_DATABASE: ttms_prod
+      DB_USERNAME: root
+      DB_PASSWORD: ${DB_PASSWORD}
+      REDIS_HOST: redis
+    depends_on:
+      - mysql
+      - redis
+
+  mysql:
+    container_name: ttms-mysql-prod
+    environment:
+      MYSQL_DATABASE: ttms_prod
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      SERVICE_TAGS: prod
+    volumes:
+      - mysql_prod_data:/var/lib/mysql
+
+  redis:
+    container_name: ttms-redis-prod
+    volumes:
+      - redis_prod_data:/data
+
+volumes:
+  mysql_prod_data:
+  redis_prod_data:

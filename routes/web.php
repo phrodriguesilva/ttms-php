@@ -11,12 +11,26 @@ use App\Http\Controllers\SupplyController;
 use App\Http\Controllers\AirportController;
 use App\Http\Controllers\SettingController;
 
-Route::get('/', function () {
-    if (auth()->check()) {
-        return redirect()->route('dashboard');
-    }
-    return redirect()->route('login');
+/*
+|--------------------------------------------------------------------------
+| Web Routes
+|--------------------------------------------------------------------------
+|
+| Here is where you can register web routes for your application. These
+| routes are loaded by the RouteServiceProvider and all of them will
+| be assigned to the "web" middleware group. Make something great!
+|
+*/
+
+// Rotas da API
+Route::prefix('api')->group(function () {
+    // Suas rotas de API aqui
 });
+
+// Todas as outras rotas serão direcionadas para o Nuxt
+// Route::get('/{any}', function () {
+//     return view('nuxt');
+// })->where('any', '^(?!api).*$');
 
 Auth::routes();
 
@@ -102,3 +116,8 @@ Route::middleware(['auth'])->group(function () {
         }
     });
 });
+
+// Catch-all route to serve Vue frontend
+Route::get('/{any}', function () {
+    return file_get_contents(public_path('frontend/index.html'));
+})->where('any', '.*');

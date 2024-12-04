@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Airport;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 
 class AirportController extends Controller
 {
@@ -114,5 +115,61 @@ class AirportController extends Controller
 
         return redirect()->route('airports.index')
             ->with('success', 'Airport deleted successfully.');
+    }
+
+    /**
+     * Display a listing of the resource in JSON format.
+     */
+    public function indexJson(): JsonResponse
+    {
+        $airports = Airport::all();
+        return response()->json($airports);
+    }
+
+    /**
+     * Store a newly created resource in storage in JSON format.
+     */
+    public function storeJson(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'code' => 'required|unique:airports,code',
+            'name' => 'required|string|max:255',
+            'city' => 'required|string|max:255',
+        ]);
+
+        $airport = Airport::create($validated);
+        return response()->json($airport, 201);
+    }
+
+    /**
+     * Display the specified resource in JSON format.
+     */
+    public function showJson(Airport $airport): JsonResponse
+    {
+        return response()->json($airport);
+    }
+
+    /**
+     * Update the specified resource in storage in JSON format.
+     */
+    public function updateJson(Request $request, Airport $airport): JsonResponse
+    {
+        $validated = $request->validate([
+            'code' => 'sometimes|unique:airports,code,' . $airport->id,
+            'name' => 'sometimes|string|max:255',
+            'city' => 'sometimes|string|max:255',
+        ]);
+
+        $airport->update($validated);
+        return response()->json($airport);
+    }
+
+    /**
+     * Remove the specified resource from storage in JSON format.
+     */
+    public function destroyJson(Airport $airport): JsonResponse
+    {
+        $airport->delete();
+        return response()->json(null, 204);
     }
 }

@@ -12,6 +12,7 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\VehicleAvailabilityController;
 use App\Http\Controllers\PriceCalculationController;
+use App\Http\Controllers\AirportController;
 
 /*
 |--------------------------------------------------------------------------
@@ -26,14 +27,15 @@ use App\Http\Controllers\PriceCalculationController;
 
 // Public routes
 Route::post('/register', [AuthController::class, 'register']);
-Route::post('/login', [AuthController::class, 'login']);
 
 // Protected routes
 Route::middleware('auth:sanctum')->group(function () {
     // Auth routes
-    Route::post('/logout', [AuthController::class, 'logout']);
-    Route::get('/user', [AuthController::class, 'user']);
-    Route::post('/change-password', [AuthController::class, 'changePassword']);
+    Route::prefix('auth')->group(function () {
+        Route::post('/login', [AuthController::class, 'login']);
+        Route::post('/logout', [AuthController::class, 'logout']);
+        Route::get('/me', [AuthController::class, 'me']);
+    });
 
     // Profile routes
     Route::prefix('profile')->group(function () {
@@ -99,6 +101,13 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Price calculation route
     Route::post('/calculate-price', [PriceCalculationController::class, 'calculate']);
+
+    // Rotas de Aeroportos
+    Route::get('/airports', [AirportController::class, 'indexJson']);
+    Route::post('/airports', [AirportController::class, 'storeJson']);
+    Route::get('/airports/{airport}', [AirportController::class, 'showJson']);
+    Route::put('/airports/{airport}', [AirportController::class, 'updateJson']);
+    Route::delete('/airports/{airport}', [AirportController::class, 'destroyJson']);
 
     // Notification routes
     Route::prefix('notifications')->group(function () {

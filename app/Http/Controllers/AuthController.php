@@ -44,23 +44,29 @@ class AuthController extends Controller
      */
     public function login(Request $request): JsonResponse
     {
-        $validated = $request->validate([
-            'email' => 'required|string|email',
-            'password' => 'required|string'
+        $request->validate([
+            'email' => 'required|email',
+            'password' => 'required'
         ]);
 
-        if (!Auth::attempt($validated)) {
+        $user = User::where('email', $request->email)->first();
+
+        if (!$user || !Hash::check($request->password, $user->password)) {
             throw ValidationException::withMessages([
-                'email' => ['The provided credentials are incorrect.']
+                'email' => ['As credenciais fornecidas estão incorretas.']
             ]);
         }
 
-        $user = User::where('email', $validated['email'])->firstOrFail();
-        $token = $user->createToken('auth-token')->plainTextToken;
+        // Revoke all existing tokens
+        $user->tokens()->delete();
+
+        // Criar novo token
+        $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
-            'user' => $user,
-            'token' => $token
+            'access_token' => $token,
+            'token_type' => 'Bearer',
+            'user' => $user
         ]);
     }
 
@@ -71,15 +77,13 @@ class AuthController extends Controller
     {
         $request->user()->currentAccessToken()->delete();
 
-        return response()->json([
-            'message' => 'Successfully logged out'
-        ]);
+        return response()->json(['message' => 'Logged out successfully']);
     }
 
     /**
      * Get authenticated user details.
      */
-    public function user(Request $request): JsonResponse
+    public function me(Request $request): JsonResponse
     {
         return response()->json($request->user());
     }

@@ -1,0 +1,18 @@
+0 verbose cli /usr/bin/node /usr/bin/npm
+1 info using npm@10.8.2
+2 info using node@v20.18.1
+3 silly config load:file:/usr/lib/node_modules/npm/npmrc
+4 silly config load:file:/var/www/client/.npmrc
+5 silly config load:file:/var/www/.npmrc
+6 silly config load:file:/usr/etc/npmrc
+7 verbose title npm run build
+8 verbose argv "run" "build"
+9 verbose logfile logs-max:10 dir:/var/www/.npm/_logs/2024-12-03T22_39_46_352Z-
+10 verbose logfile /var/www/.npm/_logs/2024-12-03T22_39_46_352Z-debug-0.log
+11 silly logfile done cleaning log files
+12 verbose cwd /var/www/client
+13 verbose os Linux 6.10.11-linuxkit
+14 verbose node v20.18.1
+15 verbose npm  v10.8.2
+16 verbose exit 1
+17 verbose code 1

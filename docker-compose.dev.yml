@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  nginx:
+    container_name: ttms-nginx-dev
+    ports:
+      - "8000:80"
+    depends_on:
+      - app
+      - frontend
+
+  app:
+    container_name: ttms-app-dev
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile.dev
+    environment:
+      PHP_IDE_CONFIG: "serverName=Docker"
+      APP_ENV: local
+      APP_DEBUG: "true"
+      DB_HOST: mysql
+      DB_DATABASE: ttms_dev
+      DB_USERNAME: root
+      DB_PASSWORD: root
+      REDIS_HOST: redis
+    depends_on:
+      - mysql
+      - redis
+
+  frontend:
+    container_name: ttms-frontend-dev
+    image: node:18-alpine
+    working_dir: /app
+    command: sh -c "cd client && npm install && npm run dev -- --host"
+    volumes:
+      - ./:/app
+    networks:
+      - ttms-network
+    environment:
+      NODE_ENV: development
+    ports:
+      - "5173:5173"
+
+  mysql:
+    container_name: ttms-mysql-dev
+    environment:
+      MYSQL_DATABASE: ttms_dev
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_PASSWORD: root
+      SERVICE_TAGS: dev
+    ports:
+      - "3306:3306"
+
+  redis:
+    container_name: ttms-redis-dev
+    ports:
+      - "6379:6379"
+
+  mailhog:
+    container_name: ttms-mailhog
+    image: mailhog/mailhog
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    networks:
+      - ttms-network

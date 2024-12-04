@@ -1,18 +1,37 @@
 version: '3.8'
 
 services:
-  # PHP Application
-  app:
+  # PHP Development
+  app-dev:
     build:
       context: .
-      dockerfile: Dockerfile
-    container_name: ttms-app
+      dockerfile: docker/php/Dockerfile.dev
+    container_name: ttms-app-dev
     restart: unless-stopped
     working_dir: /var/www/
     volumes:
       - ./:/var/www
     networks:
       - ttms-network
+    depends_on:
+      - mysql
+      - redis
+
+  # PHP Production
+  app-prod:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile.prod
+    container_name: ttms-app-prod
+    restart: unless-stopped
+    working_dir: /var/www/
+    volumes:
+      - ./:/var/www
+    networks:
+      - ttms-network
+    depends_on:
+      - mysql
+      - redis
 
   # Nginx Service
   nginx:
@@ -20,10 +39,39 @@ services:
     container_name: ttms-nginx
     restart: unless-stopped
     ports:
-      - "8000:80"
+      - "80:80"
+      - "8000:8000"
     volumes:
       - ./:/var/www
       - ./docker/nginx:/etc/nginx/conf.d/
+    networks:
+      - ttms-network
+    depends_on:
+      - app-dev
+      - app-prod
+      - dev
+
+  # Frontend Development
+  dev:
+    image: node:18-alpine
+    container_name: ttms-dev
+    working_dir: /app
+    command: sh -c "cd client && npm install && npm run dev -- --host"
+    volumes:
+      - ./:/app
+    ports:
+      - "8000:8000"
+    networks:
+      - ttms-network
+
+  # Frontend Production Build
+  prod:
+    image: node:18-alpine
+    container_name: ttms-prod
+    working_dir: /app/client
+    volumes:
+      - .:/app
+    command: sh -c "npm ci && npm run build-only && mkdir -p /app/public/frontend && cp -R dist/* /app/public/frontend/"
     networks:
       - ttms-network
 
@@ -54,20 +102,6 @@ services:
     restart: unless-stopped
     ports:
       - "6379:6379"
-    networks:
-      - ttms-network
-
-  # Laravel Echo Server for WebSockets
-  laravel-echo:
-    image: node:16-alpine
-    container_name: ttms-echo
-    restart: unless-stopped
-    working_dir: /app
-    volumes:
-      - ./:/app
-    ports:
-      - "6001:6001"
-    command: sh -c "npm install -g laravel-echo-server && laravel-echo-server start"
     networks:
       - ttms-network
 

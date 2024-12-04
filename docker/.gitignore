@@ -1,0 +1,13 @@
+# Docker
+docker/nginx/ssl/*
+!docker/nginx/ssl/.gitkeep
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+docker/nginx/logs/*
+!docker/nginx/logs/.gitkeep
