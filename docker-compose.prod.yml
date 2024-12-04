@@ -5,9 +5,6 @@ services:
     container_name: ttms-nginx-prod
     ports:
       - "80:80"
-      - "443:443"
-    volumes:
-      - ./docker/nginx/ssl:/etc/nginx/ssl
     depends_on:
       - app
 
